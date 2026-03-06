@@ -1,0 +1,180 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+    try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Attempt to parse body for user preferences if provided, or fetch from DB
+        let userPreferences: any = {};
+        try {
+            userPreferences = await req.json();
+        } catch (e) {
+            // Ignore if no body provided
+        }
+
+        // Get the user's latest parsed resume
+        const { data: resumes } = await supabase
+            .from("resumes")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+        if (!resumes || resumes.length === 0) {
+            return NextResponse.json({ error: "No resume found. Please upload a resume first." }, { status: 400 });
+        }
+        const resume = resumes[0];
+
+        // Build the query for Remotive
+        const searchTerm = userPreferences?.desired_role || "software";
+
+        // Fetch from Remotive API
+        const response = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(searchTerm)}&limit=15`);
+        const data = await response.json();
+        const jobs = data.jobs?.slice(0, 15) || []; // Process up to 15 recent matches
+
+        if (jobs.length === 0) {
+            return NextResponse.json({ matches: [] });
+        }
+
+        // Prepare batch prompt for OpenAI to score all 15 jobs at once against the resume
+        const jobsPromptData = jobs.map((job: any) => ({
+            id: job.id,
+            title: job.title,
+            company: job.company_name,
+            description: job.description.substring(0, 1000) // Truncate HTML/description to avoid token overflow
+        }));
+
+        const systemPrompt = `You are a highly capable AI Applicant Tracking System.
+You will receive a candidate's resume summary and a list of job descriptions.
+For EACH job, calculate a relevance score (0-100) based on how well the candidate's skills and experience match the job requirements.
+Also identify any 'matching_skills' and 'missing_skills'.
+Respond ONLY with a valid JSON array of objects, where each object matches this schema:
+{
+  "job_id": string or number,
+  "relevance_score": number, // 0 to 100
+  "matching_skills": string[],
+  "missing_skills": string[],
+  "ats_summary": string // short 1 sentence summary of the match
+}`;
+
+        const userPromptContent = `
+Candidate Resume:
+${JSON.stringify(resume.skills, null, 2)}
+Candidate parsed text excerpt:
+${resume.parsed_content.substring(0, 3000)}
+
+Jobs to evaluate:
+${JSON.stringify(jobsPromptData, null, 2)}
+`;
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPromptContent }
+            ],
+            response_format: { type: "json_object" } // Enforce JSON
+        });
+
+        const aiResponseStr = completion.choices[0].message.content || '{"matches": []}';
+        let scoredJobs: any[] = [];
+
+        try {
+            const parsedAiResponse = JSON.parse(aiResponseStr);
+            // Depending on how GPT formats it, it might be an array or an object with a key containing the array
+            if (Array.isArray(parsedAiResponse)) {
+                scoredJobs = parsedAiResponse;
+            } else {
+                // Find the first array-like property
+                const arrayKey = Object.keys(parsedAiResponse).find(k => Array.isArray(parsedAiResponse[k]));
+                if (arrayKey) {
+                    scoredJobs = parsedAiResponse[arrayKey];
+                } else {
+                    scoredJobs = [parsedAiResponse]; // fallback
+                }
+            }
+        } catch (err) {
+            console.error("OpenAI JSON parse error:", err);
+            // Try to recover by ignoring
+            return NextResponse.json({ error: "Failed to score jobs" }, { status: 500 });
+        }
+
+        // Filter jobs >= 70% relevance
+        const finalMatches = [];
+        const jobInserts = [];
+        const matchInserts = [];
+
+        for (const job of jobs) {
+            const scoreData = scoredJobs.find(s => String(s.job_id) === String(job.id));
+            if (scoreData && scoreData.relevance_score >= 70) {
+
+                // Push to public.jobs table (upsert based on remotive_id)
+                jobInserts.push({
+                    remotive_id: String(job.id),
+                    title: job.title,
+                    company: job.company_name,
+                    description: job.description,
+                    applies_link: job.url
+                });
+
+                finalMatches.push({
+                    job,
+                    score: scoreData
+                });
+            }
+        }
+
+        // Sort by highest relevance
+        finalMatches.sort((a, b) => b.score.relevance_score - a.score.relevance_score);
+
+        // Persist cache to DB
+        if (jobInserts.length > 0) {
+            const { data: insertedJobs, error: jobInsertError } = await supabase
+                .from("jobs")
+                .upsert(jobInserts, { onConflict: "remotive_id" })
+                .select();
+
+            if (!jobInsertError && insertedJobs) {
+                for (const insertedJob of insertedJobs) {
+                    const matchData = finalMatches.find(m => String(m.job.id) === String(insertedJob.remotive_id));
+                    if (matchData) {
+                        matchInserts.push({
+                            user_id: user.id,
+                            job_id: insertedJob.id,
+                            relevance_score: matchData.score.relevance_score,
+                            match_summary: {
+                                matching_skills: matchData.score.matching_skills,
+                                missing_skills: matchData.score.missing_skills,
+                                ats_summary: matchData.score.ats_summary
+                            }
+                        });
+                    }
+                }
+            }
+
+            if (matchInserts.length > 0) {
+                await supabase
+                    .from("job_matches")
+                    .upsert(matchInserts, { onConflict: "user_id, job_id" });
+            }
+        }
+
+        return NextResponse.json({ matches: finalMatches });
+
+    } catch (error: any) {
+        console.error("Job match error:", error);
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    }
+}

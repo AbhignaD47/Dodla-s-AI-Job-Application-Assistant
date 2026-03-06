@@ -1,101 +1,106 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, CheckCircle2, Zap, FileText, Target, Award } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="flex flex-col items-center">
+      {/* Hero Section */}
+      <section className="w-full py-20 lg:py-32 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Decorative background elements */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl -z-10 animate-float" />
+        <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-pink-500/5 rounded-full blur-3xl -z-10" />
+
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary mb-8 border border-primary/20 text-sm font-medium">
+          <Zap size={16} className="text-primary" />
+          <span>Dodla's AI Application Assistant is Live</span>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tight max-w-4xl mb-6 text-slate-900">
+          Land Your Dream Job with <br className="hidden md:block" />
+          <span className="text-gradient">Intelligent AI Automation</span>
+        </h1>
+
+        <p className="text-lg text-muted-foreground max-w-2xl mb-10 leading-relaxed">
+          Upload your resume once. Let our AI find the perfect roles, score your ATS match,
+          tailor your portfolio, and track your applications—all in one beautiful dashboard.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link href="/signup">
+            <Button size="lg" className="rounded-full px-8 h-14 text-base font-semibold shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/30 transition-all hover:-translate-y-1">
+              Start for Free
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+          <Link href="/pricing">
+            <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-base font-semibold bg-white/50 border-slate-200 hover:bg-slate-50 transition-all glass-card">
+              View Pricing
+            </Button>
+          </Link>
+        </div>
+        <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
+          <CheckCircle2 size={16} className="text-emerald-500" /> No credit card required. Get 1000 free credits.
+        </p>
+      </section>
+
+      {/* Features Section */}
+      <section className="w-full py-20 bg-slate-50 border-y border-slate-200/50">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight mb-4 text-slate-900">Everything you need to get hired faster</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">We've automated the most tedious parts of the job application process so you can focus on acing your interviews.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="glass-card p-8 rounded-2xl flex flex-col items-start bg-white z-10">
+              <div className="bg-blue-100 p-3 rounded-xl text-blue-600 mb-6">
+                <FileText size={24} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Resume-First Matching</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Upload your resume, and our AI extracts your skills and experience to find jobs with a 70%+ relevance score.
+              </p>
+            </div>
+
+            <div className="glass-card p-8 rounded-2xl flex flex-col items-start bg-white z-10 relative">
+              <div className="absolute -top-4 right-8 bg-gradient-to-r from-pink-500 to-orange-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                Popular
+              </div>
+              <div className="bg-pink-100 p-3 rounded-xl text-pink-600 mb-6">
+                <Target size={24} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">JD-Specific Optimization</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Automatically rewrite your resume and generate dynamic portfolio pages tailored to each specific job description.
+              </p>
+            </div>
+
+            <div className="glass-card p-8 rounded-2xl flex flex-col items-start bg-white z-10">
+              <div className="bg-emerald-100 p-3 rounded-xl text-emerald-600 mb-6">
+                <Award size={24} />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Smart Kanban Tracker</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Manage your pipeline visually. Move applications from 'Saved' to 'Interview' to 'Offer' seamlessly.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How it works simple text */}
+      <section className="w-full py-20 container max-w-4xl mx-auto text-center px-4">
+        <h2 className="text-3xl font-bold mb-8">Ready to revolutionize your job search?</h2>
+        <div className="inline-block p-[2px] rounded-full bg-gradient-to-r from-primary via-pink-500 to-orange-500">
+          <Link href="/signup">
+            <Button size="lg" className="rounded-full px-10 h-16 text-lg font-bold bg-white text-slate-900 hover:bg-slate-50 border-0">
+              Create your account
+            </Button>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
