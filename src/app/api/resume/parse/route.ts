@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 export const maxDuration = 60; // Set Vercel hobby maximum duration to prevent timeouts
+export const dynamic = 'force-dynamic'; // Prevent Next.js from aggressively caching this route as static, which causes 405s
 import { createClient } from "@/utils/supabase/server";
 const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
