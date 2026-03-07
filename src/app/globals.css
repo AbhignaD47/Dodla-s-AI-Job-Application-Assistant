@@ -67,7 +67,7 @@
   }
 
   body {
-    @apply bg-background text-foreground tracking-tight antialiased selection:bg-primary/20 selection:text-primary;
+    @apply bg-background text-foreground tracking-tight antialiased;
     /* subtle gradient background */
     background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
       radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.05), transparent 40%);
