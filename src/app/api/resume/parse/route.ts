@@ -15,19 +15,6 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
     try {
-        // Polyfill DOMMatrix for pdf-parse in Next.js 14 serverless Node.js
-        if (typeof (global as any).DOMMatrix === "undefined") {
-            (global as any).DOMMatrix = class DOMMatrix {
-                constructor() { return [1, 0, 0, 1, 0, 0]; }
-            };
-        }
-
-        // Defer instantiation to catch Vercel Edge Node.js binary incompatibility crashes
-        const pdfParse = require("pdf-parse");
-        const openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
-
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
@@ -43,17 +30,36 @@ export async function POST(req: NextRequest) {
         }
 
         // Read the file buffer
-        const buffer = Buffer.from(await file.arrayBuffer());
+        const arrayBuffer = await file.arrayBuffer();
 
-        // Parse PDF
-        const parsedData = await pdfParse(buffer);
-        const textContent = parsedData.text;
+        // Parse PDF using pdfjs-dist (stable Next.js Node compatibility)
+        const pdfjs = require("pdfjs-dist/legacy/build/pdf.js");
+
+        // Suppress worker warning
+        pdfjs.GlobalWorkerOptions.workerSrc = require("pdfjs-dist/legacy/build/pdf.worker.entry.js");
+
+        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) });
+        const pdfDocument = await loadingTask.promise;
+
+        let textContent = "";
+        const numPages = pdfDocument.numPages;
+
+        for (let i = 1; i <= numPages; i++) {
+            const page = await pdfDocument.getPage(i);
+            const content = await page.getTextContent();
+            const pageText = content.items.map((item: any) => item.str).join(" ");
+            textContent += pageText + "\n";
+        }
 
         if (!textContent || textContent.trim().length === 0) {
             return NextResponse.json({ error: "Could not extract text from PDF" }, { status: 400 });
         }
 
         // Use OpenAI to extract skills, keywords, and experience
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini", // Cost efficient but smart
             messages: [
@@ -77,7 +83,7 @@ export async function POST(req: NextRequest) {
             const fileName = `${user.id}/${Date.now()}_${file.name}`;
             const { data, error } = await supabase.storage
                 .from("resumes")
-                .upload(fileName, buffer, {
+                .upload(fileName, arrayBuffer, {
                     contentType: file.type,
                     upsert: true,
                 });
