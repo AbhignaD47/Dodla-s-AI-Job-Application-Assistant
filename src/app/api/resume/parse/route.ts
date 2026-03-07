@@ -32,24 +32,24 @@ export async function POST(req: NextRequest) {
         // Read the file buffer
         const arrayBuffer = await file.arrayBuffer();
 
-        // Parse PDF using pdfjs-dist (stable Next.js Node compatibility)
-        const pdfjs = require("pdfjs-dist/legacy/build/pdf.js");
+        // Parse PDF using pdf2json (Pure Node.js, no Workers, no Webpack interference)
+        const PDFParser = require("pdf2json");
 
-        // Suppress worker warning
-        pdfjs.GlobalWorkerOptions.workerSrc = require("pdfjs-dist/legacy/build/pdf.worker.entry.js");
+        const textContent = await new Promise<string>((resolve, reject) => {
+            const pdfParser = new PDFParser(null, 1);
 
-        const loadingTask = pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) });
-        const pdfDocument = await loadingTask.promise;
+            pdfParser.on("pdfParser_dataError", (errData: any) => {
+                console.error(errData.parserError);
+                reject(errData.parserError);
+            });
 
-        let textContent = "";
-        const numPages = pdfDocument.numPages;
+            pdfParser.on("pdfParser_dataReady", () => {
+                // pdfParser.getRawTextContent() returns the full text
+                resolve(pdfParser.getRawTextContent());
+            });
 
-        for (let i = 1; i <= numPages; i++) {
-            const page = await pdfDocument.getPage(i);
-            const content = await page.getTextContent();
-            const pageText = content.items.map((item: any) => item.str).join(" ");
-            textContent += pageText + "\n";
-        }
+            pdfParser.parseBuffer(Buffer.from(arrayBuffer));
+        });
 
         if (!textContent || textContent.trim().length === 0) {
             return NextResponse.json({ error: "Could not extract text from PDF" }, { status: 400 });
