@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const maxDuration = 60; // Set Vercel hobby maximum duration to prevent timeouts
 import { createClient } from "@/utils/supabase/server";
 const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
