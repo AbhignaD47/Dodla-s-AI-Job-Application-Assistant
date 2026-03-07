@@ -1,6 +1,5 @@
 import * as React from "react"
 import { Slot } from "@/components/ui/slot"
-import { Label } from "@/components/ui/label"
 import {
     Controller,
     ControllerProps,
