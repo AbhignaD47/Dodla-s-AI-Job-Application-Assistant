@@ -1,3 +1,4 @@
+import { createClient } from "@/utils/supabase/server";
 import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,8 @@ async function getPublicJobs() {
 
 export default async function PublicJobsPage() {
     const jobs = await getPublicJobs();
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
 
     return (
         <div className="container py-12 mx-auto max-w-7xl">
@@ -35,7 +38,7 @@ export default async function PublicJobsPage() {
                     Curated Remote Tech Jobs
                 </h1>
                 <p className="text-xl text-muted-foreground justify-center max-w-2xl mx-auto">
-                    Discover high-quality remote opportunities. Sign in to unlock AI-powered match scoring and auto-generated cover letters.
+                    {user ? "Explore remote opportunities and use your AI credits to match and generate cover letters." : "Discover high-quality remote opportunities. Sign in to unlock AI-powered match scoring and auto-generated cover letters."}
                 </p>
 
                 <div className="w-full max-w-2xl flex items-center space-x-2 mt-8">
@@ -52,12 +55,21 @@ export default async function PublicJobsPage() {
 
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold tracking-tight">Latest Opportunities</h2>
-                <Link href="/login">
-                    <Button variant="outline" className="text-brand border-brand/50 hover:bg-brand/10">
-                        Sign In for AI Matches
-                        <span className="ml-2">✨</span>
-                    </Button>
-                </Link>
+                {user ? (
+                    <Link href="/dashboard">
+                        <Button variant="outline" className="text-brand border-brand/50 hover:bg-brand/10">
+                            Go to Dashboard
+                            <span className="ml-2">→</span>
+                        </Button>
+                    </Link>
+                ) : (
+                    <Link href="/login">
+                        <Button variant="outline" className="text-brand border-brand/50 hover:bg-brand/10">
+                            Sign In for AI Matches
+                            <span className="ml-2">✨</span>
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
