@@ -62,8 +62,20 @@ export function ResumeUpload() {
             });
 
             if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || "Failed to upload resume");
+                let errorMessage = `Server Error: ${res.status} ${res.statusText}`;
+                try {
+                    const text = await res.text();
+                    try {
+                        const errorData = JSON.parse(text);
+                        if (errorData.error) errorMessage = errorData.error;
+                    } catch (e) {
+                        // Truncate HTML error pages so they fit in the toast
+                        errorMessage = text.substring(0, 100) + (text.length > 100 ? "..." : "");
+                    }
+                } catch (e) {
+                    console.error("Failed to read error response", e);
+                }
+                throw new Error(errorMessage);
             }
 
             toast.success("Resume uploaded and parsed successfully!");
