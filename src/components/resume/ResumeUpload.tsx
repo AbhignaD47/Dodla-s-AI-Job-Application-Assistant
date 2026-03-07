@@ -70,7 +70,7 @@ export function ResumeUpload() {
                         if (errorData.error) errorMessage = errorData.error;
                     } catch (e) {
                         // Truncate HTML error pages so they fit in the toast
-                        errorMessage = text.substring(0, 100) + (text.length > 100 ? "..." : "");
+                        errorMessage = text.substring(0, 150) + (text.length > 150 ? "..." : "");
                     }
                 } catch (e) {
                     console.error("Failed to read error response", e);
@@ -81,7 +81,8 @@ export function ResumeUpload() {
             toast.success("Resume uploaded and parsed successfully!");
             router.refresh();
         } catch (error: any) {
-            toast.error(error.message || "An error occurred during upload.");
+            console.error("Upload error details:", error);
+            toast.error(error.message || JSON.stringify(error) || "An error occurred during upload.");
         } finally {
             setIsUploading(false);
         }
