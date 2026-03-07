@@ -14,7 +14,7 @@
     --popover-foreground: 222.2 84% 4.9%;
 
     /* Brand Primary - A modern vibrant indigo/blue */
-    --primary: 235 86% 65%; 
+    --primary: 235 86% 65%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -33,7 +33,8 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 235 86% 65%;
 
-    --radius: 0.75rem; /* softer, rounded corners */
+    --radius: 0.75rem;
+    /* softer, rounded corners */
   }
 
   .dark {
@@ -62,13 +63,14 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
+
   body {
     @apply bg-background text-foreground tracking-tight antialiased selection:bg-primary/20 selection:text-primary;
     /* subtle gradient background */
     background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent 40%),
-                      radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.05), transparent 40%);
+      radial-gradient(circle at bottom left, rgba(236, 72, 153, 0.05), transparent 40%);
     background-size: 100% 100%;
     background-attachment: fixed;
   }
@@ -77,24 +79,32 @@
 /* Animations and Utilities */
 @layer utilities {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-[0_8px_30px_rgb(0, 0, 0, 0.04)];
   }
-  
+
   .glass-card {
     @apply bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-primary/20;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-500;
   }
-  
+
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
 }
 
 @keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
