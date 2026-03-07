@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const runtime = "nodejs";
 import { createClient } from "@/utils/supabase/server";
 const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
