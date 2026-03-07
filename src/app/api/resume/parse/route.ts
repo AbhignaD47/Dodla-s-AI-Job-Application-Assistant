@@ -15,6 +15,13 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
     try {
+        // Polyfill DOMMatrix for pdf-parse in Next.js 14 serverless Node.js
+        if (typeof (global as any).DOMMatrix === "undefined") {
+            (global as any).DOMMatrix = class DOMMatrix {
+                constructor() { return [1, 0, 0, 1, 0, 0]; }
+            };
+        }
+
         // Defer instantiation to catch Vercel Edge Node.js binary incompatibility crashes
         const pdfParse = require("pdf-parse");
         const openai = new OpenAI({
