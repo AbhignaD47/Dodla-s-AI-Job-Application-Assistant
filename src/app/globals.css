@@ -79,7 +79,8 @@
 /* Animations and Utilities */
 @layer utilities {
   .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-[0_8px_30px_rgba(0, 0, 0, 0.04)];
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   }
 
   .glass-card {
