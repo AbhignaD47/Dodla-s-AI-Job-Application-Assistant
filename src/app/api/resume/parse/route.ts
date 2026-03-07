@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import pdfParse from "pdf-parse";
+const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
 
 const openai = new OpenAI({
