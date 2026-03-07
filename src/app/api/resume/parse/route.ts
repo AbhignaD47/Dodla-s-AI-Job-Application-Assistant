@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 import { createClient } from "@/utils/supabase/server";
-const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
-
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
 
 const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -20,6 +15,12 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
     try {
+        // Defer instantiation to catch Vercel Edge Node.js binary incompatibility crashes
+        const pdfParse = require("pdf-parse");
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
