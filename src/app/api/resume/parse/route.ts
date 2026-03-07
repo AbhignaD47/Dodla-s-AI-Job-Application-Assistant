@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-export const dynamic = 'force-dynamic'; // Prevent Next.js from aggressively caching this route as static, which causes 405s
 import { createClient } from "@/utils/supabase/server";
 const pdfParse = require("pdf-parse");
 import OpenAI from "openai";
@@ -7,6 +6,16 @@ import OpenAI from "openai";
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
+
+const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+    return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -86,12 +95,12 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (dbError) {
-            return NextResponse.json({ error: "Failed to save resume" }, { status: 500 });
+            return NextResponse.json({ error: "Failed to save resume" }, { status: 500, headers: corsHeaders });
         }
 
-        return NextResponse.json({ success: true, resume: resumeRecord }, { status: 200 });
+        return NextResponse.json({ success: true, resume: resumeRecord }, { status: 200, headers: corsHeaders });
     } catch (error: any) {
         console.error("Resume parse error:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500, headers: corsHeaders });
     }
 }
