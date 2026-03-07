@@ -13,39 +13,40 @@ export const metadata: Metadata = {
 
 const plans = [
     {
-        name: "Weekly",
-        price: 199,
-        credits: 50,
-        interval: "week",
+        name: "Weekly Plan",
+        price: 599,
+        credits: "5,000",
+        interval: "7 days",
         features: [
-            "50 Credits per week",
+            "7 days validity",
+            "50% unused credits carry forward one cycle",
             "Full AI Resume Parsing",
             "Job Matching System",
             "AI Cover Letter Generation",
         ],
     },
     {
-        name: "Monthly",
-        price: 499,
-        credits: 200,
-        interval: "month",
+        name: "Monthly Plan",
+        price: 2499,
+        credits: "25,000",
+        interval: "30 days",
         popular: true,
         features: [
-            "200 Credits per month",
-            "Everything in Weekly",
-            "Up to 50% unused credit rollover",
+            "30 days validity",
+            "50% unused credits carry forward one cycle",
+            "Everything in Weekly Plan",
             "Priority Job Matches",
         ],
     },
     {
-        name: "Yearly",
-        price: 4990,
-        credits: 2500,
-        interval: "year",
+        name: "Yearly Plan",
+        price: 26999,
+        credits: "300,000",
+        interval: "365 days",
         features: [
-            "2500 Credits per year",
-            "Everything in Monthly",
-            "Save 16% annually",
+            "365 days validity",
+            "50% unused credits carry forward one cycle",
+            "Everything in Monthly Plan",
             "Unlimited Job Matches",
         ],
     },
@@ -84,7 +85,7 @@ export default async function PricingPage() {
                         <div className="mb-6">
                             <h3 className="text-2xl font-bold">{plan.name}</h3>
                             <div className="mt-4 flex items-baseline text-5xl font-extrabold">
-                                ₹{plan.price}
+                                ₹{plan.price.toLocaleString('en-IN')}
                                 <span className="ml-1 text-xl font-medium text-muted-foreground">
                                     /{plan.interval}
                                 </span>
