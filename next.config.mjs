@@ -12,9 +12,7 @@ const nextConfig = {
         // !! WARN !!
         ignoreBuildErrors: true,
     },
-    experimental: {
-        serverComponentsExternalPackages: ["pdf-parse"],
-    },
+    serverExternalPackages: ["pdf-parse"],
 };
 
 export default nextConfig;
