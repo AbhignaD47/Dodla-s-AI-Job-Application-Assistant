@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     description: "Browse curated remote tech jobs powered by Remotive API.",
 };
 
+export const dynamic = 'force-dynamic';
+
 // Fetch initial generic jobs server-side
 async function getPublicJobs() {
     try {
@@ -116,12 +118,21 @@ export default async function PublicJobsPage() {
                             <span className="text-xs text-slate-500 font-medium pb-2">
                                 {new Date(job.publication_date).toLocaleDateString()}
                             </span>
-                            <Link href="/login">
-                                <Button size="sm" variant="ghost" className="text-brand hover:text-brand hover:bg-brand/10 group">
-                                    Match & Apply
-                                    <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">→</span>
-                                </Button>
-                            </Link>
+                            {user ? (
+                                <Link href={job.url || "#"} target="_blank" prefetch={false}>
+                                    <Button size="sm" variant="ghost" className="text-brand hover:text-brand hover:bg-brand/10 group">
+                                        Apply Now
+                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">→</span>
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <Link href="/login">
+                                    <Button size="sm" variant="ghost" className="text-brand hover:text-brand hover:bg-brand/10 group">
+                                        Match & Apply
+                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">→</span>
+                                    </Button>
+                                </Link>
+                            )}
                         </CardFooter>
                     </Card>
                 ))}
