@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Building2, ExternalLink, Loader2, Target } from "lucide-react";
+import { Briefcase, Building2, ExternalLink, Loader2, Target, MapPin } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
 
-interface JobMatch {
+export interface JobMatch {
     job: {
         id: string;
         title: string;
         company_name: string;
+        location?: string;
         description: string;
         url: string;
     };
@@ -24,35 +23,13 @@ interface JobMatch {
     };
 }
 
-export function LiveJobMatches() {
-    const [matches, setMatches] = useState<JobMatch[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+interface LiveJobMatchesProps {
+    matches: JobMatch[];
+    isLoading: boolean;
+    hasSearched: boolean;
+}
 
-    useEffect(() => {
-        const fetchMatches = async () => {
-            try {
-                // This will use the user's parsed resume and the new Adzuna API
-                const response = await fetch("/api/jobs", {
-                    method: "POST",
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch matches");
-                }
-
-                const data = await response.json();
-                setMatches(data.matches || []);
-            } catch (error) {
-                console.error(error);
-                toast.error("Could not load job matches at this time.");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchMatches();
-    }, []);
-
+export function LiveJobMatches({ matches, isLoading, hasSearched }: LiveJobMatchesProps) {
     if (isLoading) {
         return (
             <Card className="mt-8 border-brand/20 shadow-md">
@@ -64,6 +41,10 @@ export function LiveJobMatches() {
         );
     }
 
+    if (!hasSearched) {
+        return null;
+    }
+
     if (matches.length === 0) {
         return (
             <div className="mt-8 space-y-4">
@@ -71,17 +52,14 @@ export function LiveJobMatches() {
                     <Target className="text-pink-500" />
                     Live Job Matches
                 </h2>
-                <Card className="border-brand/20 shadow-md">
+                <Card className="border-brand/20 shadow-md bg-slate-50/50">
                     <CardContent className="py-12 flex flex-col items-center justify-center text-slate-500 text-center">
                         <Briefcase className="h-10 w-10 mb-4 text-slate-300" />
-                        <h3 className="text-lg font-semibold text-slate-700 mb-1">No highly relevant jobs found right now</h3>
+                        <h3 className="text-lg font-semibold text-slate-700 mb-1">No highly relevant jobs found</h3>
                         <p className="max-w-md">
-                            We analyzed the latest live listings based on your core skills, but none met our 70% relevance threshold.
-                            Consider editing your resume to include more targeted keywords, or check back later!
+                            We analyzed the latest live listings based on your preferences, but none met our 70% relevance threshold.
+                            Consider editing your keywords and trying again!
                         </p>
-                        <Link href="/jobs" className="mt-6">
-                            <Button variant="outline">Browse All Jobs</Button>
-                        </Link>
                     </CardContent>
                 </Card>
             </div>
@@ -106,9 +84,17 @@ export function LiveJobMatches() {
                                     {match.score.relevance_score}% Match
                                 </Badge>
                             </div>
-                            <div className="flex items-center text-muted-foreground mt-1 text-sm text-slate-600">
-                                <Building2 className="w-4 h-4 mr-1" />
-                                <span className="font-medium">{match.job.company_name}</span>
+                            <div className="flex items-center text-muted-foreground mt-1 text-sm text-slate-600 gap-3">
+                                <div className="flex items-center">
+                                    <Building2 className="w-4 h-4 mr-1" />
+                                    <span className="font-medium">{match.job.company_name}</span>
+                                </div>
+                                {match.job.location && (
+                                    <div className="flex items-center text-slate-500">
+                                        <MapPin className="w-3.5 h-3.5 mr-1" />
+                                        <span>{match.job.location}</span>
+                                    </div>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 pb-3 text-sm">

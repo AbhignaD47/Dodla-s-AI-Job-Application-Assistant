@@ -37,7 +37,9 @@ export async function POST(req: NextRequest) {
         const resume = resumes[0];
 
         // Build the query for Adzuna
-        let searchTerm = userPreferences?.desired_role;
+        // Prefer the explicitly submitted keywords, then fallback to AI skills
+        let searchTerm = userPreferences?.keywords || userPreferences?.desired_role;
+
         if (!searchTerm) {
             // Fallback to top skill or first keyword from the parsed resume
             if (resume.skills?.skills && resume.skills.skills.length > 0) {
@@ -53,7 +55,12 @@ export async function POST(req: NextRequest) {
         // https://developer.adzuna.com/docs/search
         const adzunaAppId = "be001e44";
         const adzunaAppKey = "ffa3d1155d68cbdad175d4e716c9b170";
-        const adzunaUrl = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${adzunaAppId}&app_key=${adzunaAppKey}&results_per_page=15&what=${encodeURIComponent(searchTerm)}`;
+
+        let adzunaUrl = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${adzunaAppId}&app_key=${adzunaAppKey}&results_per_page=15&what=${encodeURIComponent(searchTerm)}`;
+
+        if (userPreferences?.location && userPreferences.location.trim() !== "") {
+            adzunaUrl += `&where=${encodeURIComponent(userPreferences.location.trim())}`;
+        }
 
         const response = await fetch(adzunaUrl);
         const data = await response.json();
@@ -72,9 +79,9 @@ export async function POST(req: NextRequest) {
         }));
 
         const systemPrompt = `You are a highly capable AI Applicant Tracking System.
-You will receive a candidate's resume summary and a list of job descriptions.
+You will receive a candidate's preferred skills/experience and resume summary, plus a list of job descriptions.
 For EACH job, calculate a relevance score (0-100) based on how well the candidate's skills and experience match the job requirements.
-Also identify any 'matching_skills' and 'missing_skills'.
+Also identify any 'matching_skills' and 'missing_skills' based on their requested Core Skills.
 Respond ONLY with a valid JSON array of objects, where each object matches this schema:
 {
   "job_id": string or number,
@@ -84,11 +91,18 @@ Respond ONLY with a valid JSON array of objects, where each object matches this 
   "ats_summary": string // short 1 sentence summary of the match
 }`;
 
+        // Determine which skills and experience to tell OpenAI about
+        const targetSkills = userPreferences?.skills?.length > 0 ? userPreferences.skills : resume.skills?.skills;
+        const targetExp = userPreferences?.experience_years ?? resume.skills?.experience_years ?? 0;
+
         const userPromptContent = `
-Candidate Resume:
-${JSON.stringify(resume.skills, null, 2)}
-Candidate parsed text excerpt:
-${resume.parsed_content.substring(0, 3000)}
+Candidate Preferred Core Skills to Match:
+${JSON.stringify(targetSkills, null, 2)}
+
+Candidate Target Experience Level: ${targetExp} years
+
+Candidate full parsed text excerpt (for context):
+${resume.parsed_content.substring(0, 2000)}
 
 Jobs to evaluate:
 ${JSON.stringify(jobsPromptData, null, 2)}
@@ -148,6 +162,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                     job: {
                         ...job,
                         company_name: job.company?.display_name || "Unknown Company",
+                        location: job.location?.display_name || "",
                         url: job.redirect_url || "#"
                     },
                     score: scoreData

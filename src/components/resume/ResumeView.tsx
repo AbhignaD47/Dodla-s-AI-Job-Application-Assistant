@@ -10,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 
-import { LiveJobMatches } from "./LiveJobMatches";
+import { LiveJobMatches, JobMatch } from "./LiveJobMatches";
+import { JobPreferencesForm, JobPreferences } from "./JobPreferencesForm";
 
 interface ResumeViewProps {
     resume: {
@@ -27,12 +28,26 @@ interface ResumeViewProps {
 
 export function ResumeView({ resume }: ResumeViewProps) {
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // State for live job matching
+    const [matches, setMatches] = useState<JobMatch[]>([]);
+    const [isFetchingJobs, setIsFetchingJobs] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
+
     const router = useRouter();
     const supabase = createClient();
 
     const skillsList = resume.skills?.skills || [];
     const keywordsList = resume.skills?.keywords || [];
     const experienceYears = resume.skills?.experience_years || 0;
+
+    // Derived initial preferences
+    const initialPrefs: JobPreferences = {
+        keywords: skillsList[0] || keywordsList[0] || "",
+        location: "", // or extract from resume if available, but blank is fine
+        skills: skillsList,
+        experience_years: experienceYears
+    };
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -53,8 +68,35 @@ export function ResumeView({ resume }: ResumeViewProps) {
         }
     };
 
+    const handleFindMatches = async (preferences: JobPreferences) => {
+        setIsFetchingJobs(true);
+        setHasSearched(true);
+        try {
+            const response = await fetch("/api/jobs", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(preferences),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch matches");
+            }
+
+            const data = await response.json();
+            setMatches(data.matches || []);
+        } catch (error) {
+            console.error("Job matching error:", error);
+            toast.error("Could not load job matches. Please try again.");
+            setMatches([]);
+        } finally {
+            setIsFetchingJobs(false);
+        }
+    };
+
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
             <Card className="border-brand/20 shadow-md">
                 <CardHeader className="bg-slate-50 border-b pb-6 rounded-t-xl">
                     <div className="flex justify-between items-start">
@@ -149,20 +191,21 @@ export function ResumeView({ resume }: ResumeViewProps) {
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="bg-slate-50/50 rounded-b-xl border-t mt-4 py-4 px-6 flex justify-between items-center">
-                    <p className="text-xs text-muted-foreground">
-                        Your resume data is securely stored and only used for your job matching.
-                    </p>
-                    <Link href="/jobs">
-                        <Button size="sm" className="hidden sm:flex">
-                            Find Matching Jobs
-                        </Button>
-                    </Link>
-                </CardFooter>
             </Card>
 
+            {/* Custom Job Preferences Form */}
+            <JobPreferencesForm
+                initialPreferences={initialPrefs}
+                onSubmit={handleFindMatches}
+                isLoading={isFetchingJobs}
+            />
+
             {/* Display matches fetched directly after upload/viewing */}
-            <LiveJobMatches />
+            <LiveJobMatches
+                matches={matches}
+                isLoading={isFetchingJobs}
+                hasSearched={hasSearched}
+            />
         </div>
     );
 }
