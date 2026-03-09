@@ -65,7 +65,27 @@ export function LiveJobMatches() {
     }
 
     if (matches.length === 0) {
-        return null;
+        return (
+            <div className="mt-8 space-y-4">
+                <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                    <Target className="text-pink-500" />
+                    Live Job Matches
+                </h2>
+                <Card className="border-brand/20 shadow-md">
+                    <CardContent className="py-12 flex flex-col items-center justify-center text-slate-500 text-center">
+                        <Briefcase className="h-10 w-10 mb-4 text-slate-300" />
+                        <h3 className="text-lg font-semibold text-slate-700 mb-1">No highly relevant jobs found right now</h3>
+                        <p className="max-w-md">
+                            We analyzed the latest live listings based on your core skills, but none met our 70% relevance threshold.
+                            Consider editing your resume to include more targeted keywords, or check back later!
+                        </p>
+                        <Link href="/jobs" className="mt-6">
+                            <Button variant="outline">Browse All Jobs</Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
+        );
     }
 
     return (

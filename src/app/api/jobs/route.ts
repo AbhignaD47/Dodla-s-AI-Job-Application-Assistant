@@ -37,7 +37,17 @@ export async function POST(req: NextRequest) {
         const resume = resumes[0];
 
         // Build the query for Adzuna
-        const searchTerm = userPreferences?.desired_role || "software";
+        let searchTerm = userPreferences?.desired_role;
+        if (!searchTerm) {
+            // Fallback to top skill or first keyword from the parsed resume
+            if (resume.skills?.skills && resume.skills.skills.length > 0) {
+                searchTerm = resume.skills.skills[0];
+            } else if (resume.skills?.keywords && resume.skills.keywords.length > 0) {
+                searchTerm = resume.skills.keywords[0];
+            } else {
+                searchTerm = "software";
+            }
+        }
 
         // Fetch from Adzuna API
         // https://developer.adzuna.com/docs/search
