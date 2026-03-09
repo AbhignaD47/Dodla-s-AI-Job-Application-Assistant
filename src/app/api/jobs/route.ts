@@ -36,13 +36,18 @@ export async function POST(req: NextRequest) {
         }
         const resume = resumes[0];
 
-        // Build the query for Remotive
+        // Build the query for Adzuna
         const searchTerm = userPreferences?.desired_role || "software";
 
-        // Fetch from Remotive API
-        const response = await fetch(`https://remotive.com/api/remote-jobs?search=${encodeURIComponent(searchTerm)}&limit=15`);
+        // Fetch from Adzuna API
+        // https://developer.adzuna.com/docs/search
+        const adzunaAppId = "be001e44";
+        const adzunaAppKey = "ffa3d1155d68cbdad175d4e716c9b170";
+        const adzunaUrl = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${adzunaAppId}&app_key=${adzunaAppKey}&results_per_page=15&what=${encodeURIComponent(searchTerm)}`;
+
+        const response = await fetch(adzunaUrl);
         const data = await response.json();
-        const jobs = data.jobs?.slice(0, 15) || []; // Process up to 15 recent matches
+        const jobs = data.results || [];
 
         if (jobs.length === 0) {
             return NextResponse.json({ matches: [] });
@@ -52,8 +57,8 @@ export async function POST(req: NextRequest) {
         const jobsPromptData = jobs.map((job: any) => ({
             id: job.id,
             title: job.title,
-            company: job.company_name,
-            description: job.description.substring(0, 1000) // Truncate HTML/description to avoid token overflow
+            company: job.company?.display_name || "Unknown Company",
+            description: job.description?.substring(0, 1000) // Truncate HTML/description to avoid token overflow
         }));
 
         const systemPrompt = `You are a highly capable AI Applicant Tracking System.
@@ -122,15 +127,19 @@ ${JSON.stringify(jobsPromptData, null, 2)}
 
                 // Push to public.jobs table (upsert based on remotive_id)
                 jobInserts.push({
-                    remotive_id: String(job.id),
+                    remotive_id: String(job.id), // We keep the column name logic
                     title: job.title,
-                    company: job.company_name,
-                    description: job.description,
-                    applies_link: job.url
+                    company: job.company?.display_name || "Unknown Company",
+                    description: job.description || "",
+                    applies_link: job.redirect_url || ""
                 });
 
                 finalMatches.push({
-                    job,
+                    job: {
+                        ...job,
+                        company_name: job.company?.display_name || "Unknown Company",
+                        url: job.redirect_url || "#"
+                    },
                     score: scoreData
                 });
             }
