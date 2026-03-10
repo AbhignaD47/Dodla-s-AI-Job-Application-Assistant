@@ -29,7 +29,6 @@ export async function Navbar() {
 
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
                         <Link href="/jobs" className="hover:text-primary transition-colors">Find Jobs</Link>
-                        <Link href="/pricing" className="hover:text-primary transition-colors">Pricing</Link>
                     </nav>
                 </div>
 

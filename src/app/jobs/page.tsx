@@ -14,6 +14,17 @@ export const metadata: Metadata = {
 
 export const dynamic = 'force-dynamic';
 
+interface Job {
+    id: string | number;
+    title: string;
+    company?: { display_name?: string };
+    location?: { display_name?: string; area?: string[] };
+    contract_time?: string;
+    description: string;
+    created: string;
+    redirect_url?: string;
+}
+
 // Fetch jobs server-side
 async function getJobs(query: string, location: string) {
     try {
@@ -44,7 +55,7 @@ export default async function PublicJobsPage({
     const { data: { user } } = await supabase.auth.getUser();
 
     let defaultQuery = "software developer";
-    let defaultLocation = "";
+    const defaultLocation = "";
 
     // If no specific query is provided but user is logged in, try to use their resume data
     if (!searchParams.q && user) {
@@ -105,7 +116,7 @@ export default async function PublicJobsPage({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {jobs.map((job: any) => (
+                {jobs.map((job: Job) => (
                     <Card key={job.id} className="flex flex-col hover:border-brand/40 transition-colors shadow-sm hover:shadow-md cursor-pointer">
                         <CardHeader className="pb-4">
                             <div className="flex justify-between items-start gap-4">

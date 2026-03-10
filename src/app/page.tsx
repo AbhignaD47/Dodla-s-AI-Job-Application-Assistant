@@ -34,14 +34,9 @@ export default function Home() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>
-          <Link href="/pricing">
-            <Button variant="outline" size="lg" className="rounded-full px-8 h-14 text-base font-semibold bg-white/50 border-slate-200 hover:bg-slate-50 transition-all glass-card">
-              View Pricing
-            </Button>
-          </Link>
         </div>
-        <p className="text-sm text-muted-foreground mt-4 flex items-center gap-2">
-          <CheckCircle2 size={16} className="text-emerald-500" /> No credit card required. Get 1000 free credits.
+        <p className="text-sm text-muted-foreground mt-4 flex items-center justify-center gap-2">
+          <CheckCircle2 size={16} className="text-emerald-500" /> 100% Free. Unlimited applications and AI features.
         </p>
       </section>
 

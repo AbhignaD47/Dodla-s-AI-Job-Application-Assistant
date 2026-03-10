@@ -87,14 +87,9 @@ export default async function SettingsPage() {
                             </div>
                             <div className="text-right">
                                 <p className="text-sm font-medium text-slate-600 mb-1">AI Credits</p>
-                                <p className="text-xl font-bold text-primary">{profile?.credits?.toLocaleString() || 0}</p>
+                                <p className="text-xl font-bold text-primary">Unlimited</p>
                             </div>
                         </div>
-                        <Link href="/pricing" className="block w-full">
-                            <Button className="w-full" variant="outline">
-                                Upgrade Plan
-                            </Button>
-                        </Link>
                     </CardContent>
                 </Card>
             </div>

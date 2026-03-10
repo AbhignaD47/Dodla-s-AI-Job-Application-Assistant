@@ -30,14 +30,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        const { credits, is_admin } = dbUser;
+        const { credits } = dbUser;
 
         if (action === "start") {
-            const deduction = is_admin ? 0 : 80;
-
-            if (credits < deduction) {
-                return NextResponse.json({ error: "Insufficient credits. Please upgrade your plan." }, { status: 402 });
-            }
+            const deduction = 0;
 
             // Start transaction-like behavior using rpc or distinct updates
             // Note: In production Supabase, prefer a Postgres function for exact transaction logic.
@@ -63,11 +59,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ success: true, application: appData, deducted: deduction, newCredits: credits - deduction });
 
         } else if (action === "mark_applied") {
-            const deduction = is_admin ? 0 : 20;
-
-            if (credits < deduction) {
-                return NextResponse.json({ error: "Insufficient credits to mark as applied. Please top up." }, { status: 402 });
-            }
+            const deduction = 0;
 
             const { data: appData, error: appError } = await supabase
                 .from("applications")

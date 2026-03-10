@@ -31,7 +31,7 @@ const KANBAN_COLUMNS = [
 ];
 
 export function ApplicationKanban({ initialApplications }: ApplicationKanbanProps) {
-    const [applications, setApplications] = useState<Application[]>(initialApplications);
+    const [applications] = useState<Application[]>(initialApplications);
 
     // Group applications by status
     const groupedApps = KANBAN_COLUMNS.reduce((acc, col) => {

@@ -70,7 +70,7 @@ export function LiveJobMatches({ matches, isLoading, hasSearched }: LiveJobMatch
         <div className="mt-8 space-y-4">
             <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                 <Target className="text-pink-500" />
-                Live Job Matches (>70% Relevance)
+                Live Job Matches (&gt;70% Relevance)
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {matches.map((match, idx) => (
@@ -98,7 +98,7 @@ export function LiveJobMatches({ matches, isLoading, hasSearched }: LiveJobMatch
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 pb-3 text-sm">
-                            <p className="text-slate-700 mb-3 italic">"{match.score.ats_summary}"</p>
+                            <p className="text-slate-700 mb-3 italic">&quot;{match.score.ats_summary}&quot;</p>
 
                             <div className="space-y-2">
                                 <div>

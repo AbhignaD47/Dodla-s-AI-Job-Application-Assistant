@@ -62,10 +62,7 @@ export function UserNav({ user }: { user: User }) {
                             <UserIcon className="mr-3 h-4 w-4 text-slate-400" />
                             <span>Dashboard Profile</span>
                         </button>
-                        <button onClick={() => handleNavigate('/pricing')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
-                            <CreditCard className="mr-3 h-4 w-4 text-slate-400" />
-                            <span>Billing & Plans</span>
-                        </button>
+
                         <button onClick={() => handleNavigate('/dashboard/settings')} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
                             <Settings className="mr-3 h-4 w-4 text-slate-400" />
                             <span>Account Settings</span>

@@ -11,7 +11,7 @@ export default async function ApplicationsPage() {
     }
 
     // Fetch the user's applications joined with the job details
-    const { data: applications, error } = await supabase
+    const { data: applications } = await supabase
         .from("applications")
         .select(`
             status,
@@ -34,7 +34,7 @@ export default async function ApplicationsPage() {
                 </p>
             </div>
 
-            <ApplicationKanban initialApplications={applications || []} />
+            <ApplicationKanban initialApplications={(applications as any) || []} />
         </div>
     );
 }

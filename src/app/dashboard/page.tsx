@@ -18,7 +18,7 @@ export default function DashboardOverview() {
                 </div>
                 <div className="glass-card p-6 rounded-xl flex flex-col gap-2">
                     <h3 className="font-semibold text-slate-700">Available Credits</h3>
-                    <p className="text-3xl font-bold text-primary">1,000</p>
+                    <p className="text-3xl font-bold text-primary">Unlimited</p>
                 </div>
             </div>
         </div>

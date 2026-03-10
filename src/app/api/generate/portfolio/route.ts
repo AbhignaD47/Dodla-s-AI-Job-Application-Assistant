@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY || "dummy_key_for_build",
 });
 
 export async function POST(req: NextRequest) {

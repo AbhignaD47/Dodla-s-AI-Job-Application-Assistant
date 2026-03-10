@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         // Use OpenAI to extract skills, keywords, and experience
         const openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
+            apiKey: process.env.OPENAI_API_KEY || "dummy_key_for_build",
         });
 
         const completion = await openai.chat.completions.create({

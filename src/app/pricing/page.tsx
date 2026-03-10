@@ -2,8 +2,6 @@ import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import { PromoCodeInput } from "@/components/pricing/PromoCodeInput";
-import { CheckoutButton } from "@/components/pricing/CheckoutButton";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
@@ -13,43 +11,20 @@ export const metadata: Metadata = {
 
 const plans = [
     {
-        name: "Weekly Plan",
-        price: 599,
-        credits: "5,000",
-        interval: "7 days",
-        features: [
-            "7 days validity",
-            "50% unused credits carry forward one cycle",
-            "Full AI Resume Parsing",
-            "Job Matching System",
-            "AI Cover Letter Generation",
-        ],
-    },
-    {
-        name: "Monthly Plan",
-        price: 2499,
-        credits: "25,000",
-        interval: "30 days",
+        name: "Free Forever",
+        price: 0,
+        credits: "Unlimited",
+        interval: "lifetime",
         popular: true,
         features: [
-            "30 days validity",
-            "50% unused credits carry forward one cycle",
-            "Everything in Weekly Plan",
-            "Priority Job Matches",
-        ],
-    },
-    {
-        name: "Yearly Plan",
-        price: 26999,
-        credits: "300,000",
-        interval: "365 days",
-        features: [
-            "365 days validity",
-            "50% unused credits carry forward one cycle",
-            "Everything in Monthly Plan",
+            "Lifetime validity",
+            "Unlimited AI Credits",
+            "Full AI Resume Parsing",
             "Unlimited Job Matches",
+            "Unlimited AI Cover Letters",
+            "Priority Processing",
         ],
-    },
+    }
 ];
 
 export default async function PricingPage() {
@@ -60,10 +35,10 @@ export default async function PricingPage() {
         <div className="container py-24 mx-auto max-w-6xl">
             <div className="text-center space-y-4 mb-16">
                 <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-                    Simple, transparent pricing
+                    100% Free Forever
                 </h1>
                 <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                    Choose the plan that best fits your job search needs. Cancel anytime.
+                    We believe everyone deserves the best tools to land their dream job. No subscriptions, no hidden fees.
                 </p>
             </div>
 
@@ -103,14 +78,15 @@ export default async function PricingPage() {
                         </ul>
 
                         {user ? (
-                            <div className="space-y-4 mt-auto">
-                                <PromoCodeInput planId={plan.name.toLowerCase()} price={plan.price} />
-                                <CheckoutButton planId={plan.name.toLowerCase()} price={plan.price} />
-                            </div>
+                            <Link href="/dashboard" className="mt-auto block w-full">
+                                <Button className="w-full" variant="default">
+                                    Go to Dashboard
+                                </Button>
+                            </Link>
                         ) : (
-                            <Link href="/login" className="mt-auto block">
-                                <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                                    Sign In to Subscribe
+                            <Link href="/signup" className="mt-auto block">
+                                <Button className="w-full" variant="default">
+                                    Create Free Account
                                 </Button>
                             </Link>
                         )}

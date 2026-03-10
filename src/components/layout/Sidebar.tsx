@@ -45,10 +45,10 @@ export function Sidebar() {
             <div className="mt-auto p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
                 <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Credits</p>
                 <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-500">1,000</span>
+                    <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-pink-500">Unlimited</span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3">
-                    <div className="bg-primary h-1.5 rounded-full" style={{ width: "100%" }}></div>
+                <div className="w-full bg-slate-200 rounded-full h-1.5 mt-3 overflow-hidden">
+                    <div className="bg-gradient-to-r from-primary via-pink-500 to-orange-500 h-1.5 rounded-full" style={{ width: "100%" }}></div>
                 </div>
             </div>
         </aside>
