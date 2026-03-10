@@ -85,10 +85,12 @@ Also identify any 'matching_skills' and 'missing_skills' based on their requeste
 Respond ONLY with a valid JSON array of objects, where each object matches this schema:
 {
   "job_id": string or number,
-  "relevance_score": number, // 0 to 100
-  "matching_skills": string[],
-  "missing_skills": string[],
-  "ats_summary": string // short 1 sentence summary of the match
+  "ats_score": number, // 0 to 100
+  "skill_gap_analysis": {
+    "matching": string[],
+    "missing": string[]
+  },
+  "match_summary": string // short 1 sentence summary of the match
 }`;
 
         // Determine which skills and experience to tell OpenAI about
@@ -118,7 +120,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
         });
 
         const aiResponseStr = completion.choices[0].message.content || '{"matches": []}';
-        let scoredJobs: any[] = [];
+        let scoredJobs: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         try {
             const parsedAiResponse = JSON.parse(aiResponseStr);
@@ -134,7 +136,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                     scoredJobs = [parsedAiResponse]; // fallback
                 }
             }
-        } catch (err) {
+        } catch (err: unknown) {
             console.error("OpenAI JSON parse error:", err);
             // Try to recover by ignoring
             return NextResponse.json({ error: "Failed to score jobs" }, { status: 500 });
@@ -147,7 +149,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
 
         for (const job of jobs) {
             const scoreData = scoredJobs.find(s => String(s.job_id) === String(job.id));
-            if (scoreData && scoreData.relevance_score >= 70) {
+            if (scoreData && scoreData.ats_score >= 70) {
 
                 // Push to public.jobs table (upsert based on remotive_id)
                 jobInserts.push({
@@ -171,7 +173,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
         }
 
         // Sort by highest relevance
-        finalMatches.sort((a, b) => b.score.relevance_score - a.score.relevance_score);
+        finalMatches.sort((a, b) => b.score.ats_score - a.score.ats_score);
 
         // Persist cache to DB
         if (jobInserts.length > 0) {
@@ -187,11 +189,10 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                         matchInserts.push({
                             user_id: user.id,
                             job_id: insertedJob.id,
-                            relevance_score: matchData.score.relevance_score,
+                            relevance_score: matchData.score.ats_score, // Map ats_score back to DB's relevance_score
                             match_summary: {
-                                matching_skills: matchData.score.matching_skills,
-                                missing_skills: matchData.score.missing_skills,
-                                ats_summary: matchData.score.ats_summary
+                                skill_gap_analysis: matchData.score.skill_gap_analysis,
+                                match_summary: matchData.score.match_summary
                             }
                         });
                     }
@@ -207,8 +208,8 @@ ${JSON.stringify(jobsPromptData, null, 2)}
 
         return NextResponse.json({ matches: finalMatches });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Job match error:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
     }
 }

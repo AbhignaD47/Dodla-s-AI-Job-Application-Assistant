@@ -16,10 +16,12 @@ export interface JobMatch {
         url: string;
     };
     score: {
-        relevance_score: number;
-        matching_skills: string[];
-        missing_skills: string[];
-        ats_summary: string;
+        ats_score: number;
+        skill_gap_analysis: {
+            matching: string[];
+            missing: string[];
+        };
+        match_summary: string;
     };
 }
 
@@ -81,7 +83,7 @@ export function LiveJobMatches({ matches, isLoading, hasSearched }: LiveJobMatch
                                     {match.job.title}
                                 </CardTitle>
                                 <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-200 ml-2 whitespace-nowrap">
-                                    {match.score.relevance_score}% Match
+                                    {match.score.ats_score}% ATS Score
                                 </Badge>
                             </div>
                             <div className="flex items-center text-muted-foreground mt-1 text-sm text-slate-600 gap-3">
@@ -98,20 +100,58 @@ export function LiveJobMatches({ matches, isLoading, hasSearched }: LiveJobMatch
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 pb-3 text-sm">
-                            <p className="text-slate-700 mb-3 italic">&quot;{match.score.ats_summary}&quot;</p>
+                            <div className="bg-brand/5 p-3 rounded-md mb-4 border border-brand/10">
+                                <span className="text-xs font-semibold text-brand uppercase tracking-wider block mb-1">Match Summary</span>
+                                <p className="text-slate-700 italic">&quot;{match.score.match_summary}&quot;</p>
+                            </div>
 
-                            <div className="space-y-2">
-                                <div>
-                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Matching Skills</span>
-                                    <div className="flex flex-wrap gap-1 mt-1">
-                                        {match.score.matching_skills.slice(0, 3).map((skill, i) => (
-                                            <Badge key={i} variant="secondary" className="bg-blue-50 text-blue-700 text-[10px] px-1.5 py-0">
-                                                {skill}
-                                            </Badge>
-                                        ))}
-                                        {match.score.matching_skills.length > 3 && (
-                                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">+{match.score.matching_skills.length - 3}</Badge>
-                                        )}
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    {/* Matching Skills */}
+                                    <div className="border border-emerald-100 bg-emerald-50/30 rounded-md p-2">
+                                        <span className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wider block mb-1.5 flex items-center">
+                                            <Target className="w-3 h-3 mr-1" />
+                                            Matching Skills
+                                        </span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {match.score.skill_gap_analysis.matching.length > 0 ? (
+                                                <>
+                                                    {match.score.skill_gap_analysis.matching.slice(0, 4).map((skill, i) => (
+                                                        <Badge key={i} variant="secondary" className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] px-1.5 py-0 hover:bg-emerald-200 transition-colors">
+                                                            {skill}
+                                                        </Badge>
+                                                    ))}
+                                                    {match.score.skill_gap_analysis.matching.length > 4 && (
+                                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-200 text-emerald-700">+{match.score.skill_gap_analysis.matching.length - 4}</Badge>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-[10px] text-slate-400 italic">None found</span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Missing Skills (Gap Analysis) */}
+                                    <div className="border border-red-100 bg-red-50/30 rounded-md p-2">
+                                        <span className="text-[11px] font-semibold text-red-600 uppercase tracking-wider block mb-1.5">
+                                            Skill Gaps (Missing)
+                                        </span>
+                                        <div className="flex flex-wrap gap-1">
+                                            {match.score.skill_gap_analysis.missing.length > 0 ? (
+                                                <>
+                                                    {match.score.skill_gap_analysis.missing.slice(0, 4).map((skill, i) => (
+                                                        <Badge key={i} variant="secondary" className="bg-red-50 text-red-700 border-red-100 text-[10px] px-1.5 py-0 hover:bg-red-100 transition-colors">
+                                                            {skill}
+                                                        </Badge>
+                                                    ))}
+                                                    {match.score.skill_gap_analysis.missing.length > 4 && (
+                                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-red-200 text-red-600">+{match.score.skill_gap_analysis.missing.length - 4}</Badge>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <span className="text-[10px] text-emerald-600 font-medium">No major gaps!</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
