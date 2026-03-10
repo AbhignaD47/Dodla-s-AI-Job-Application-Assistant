@@ -1,11 +1,11 @@
 import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar } from "lucide-react";
+import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar, LayoutTemplate } from "lucide-react";
 import Link from "next/link";
 import { ResumeOptimizerView } from "@/components/resume/ResumeOptimizerView";
+import { PortfolioGeneratorView } from "@/components/resume/PortfolioGeneratorView";
 
 export default async function ApplicationDetailPage({ params }: { params: { jobId: string } }) {
     const supabase = createClient();
@@ -24,6 +24,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
             status,
             created_at,
             optimized_resume_url,
+            portfolio_url,
             cover_letter_text,
             jobs (
                 id,
@@ -108,6 +109,26 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                             <ResumeOptimizerView
                                 jobId={job.id}
                                 initialOptimizedText={application.optimized_resume_url}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Portfolio Workspace */}
+                    <Card className="border-emerald-100 shadow-md">
+                        <CardHeader className="bg-emerald-50/50 rounded-t-xl pb-4 border-b border-emerald-100">
+                            <div className="flex items-center gap-2">
+                                <LayoutTemplate className="w-5 h-5 text-emerald-600" />
+                                <CardTitle className="text-lg text-emerald-900">JD-Specific Portfolio</CardTitle>
+                            </div>
+                            <CardDescription className="text-emerald-700/80 mt-1">
+                                Extract your most relevant projects to build a shareable, curated web portfolio.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <PortfolioGeneratorView
+                                jobId={job.id}
+                                userId={user.id}
+                                hasExistingPortfolio={!!application.portfolio_url}
                             />
                         </CardContent>
                     </Card>

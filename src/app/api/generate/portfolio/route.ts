@@ -16,52 +16,123 @@ export async function POST(req: NextRequest) {
         }
 
         const { job_id } = await req.json();
-        if (!job_id) return NextResponse.json({ error: "Job ID required" }, { status: 400 });
 
-        const { data: resumes } = await supabase.from("resumes").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(1);
-        const { data: job } = await supabase.from("jobs").select("*").eq("id", job_id).single();
-
-        if (!resumes || !job) {
-            return NextResponse.json({ error: "Resume or Job not found." }, { status: 400 });
+        if (!job_id) {
+            return NextResponse.json({ error: "Job ID is required" }, { status: 400 });
         }
 
-        // Generate Portfolio JSON
-        const systemPrompt = `You are a portfolio generator. Extract the candidate's projects and experience that are MOST RELEVANT to the provided job description. 
-Return a JSON object with this schema:
-{
-  "title": string,
-  "summary": string,
-  "projects": [{ "name": string, "description": string, "skills_used": string[] }]
-}`;
+        // 1. Fetch the Application and Job details
+        const { data: application } = await supabase
+            .from("applications")
+            .select(`
+                status,
+                jobs (
+                    id,
+                    title,
+                    company,
+                    description
+                )
+            `)
+            .eq("user_id", user.id)
+            .eq("job_id", job_id)
+            .single();
 
-        const userPromptContent = `Resume: ${resumes[0].parsed_content.substring(0, 3000)}\n\nJob: ${job.title} at ${job.company}\n${job.description.substring(0, 2000)}`;
+        if (!application || !application.jobs) {
+            return NextResponse.json({ error: "Application/Job not found" }, { status: 404 });
+        }
+
+        const job: any = Array.isArray(application.jobs) ? application.jobs[0] : application.jobs; // eslint-disable-line @typescript-eslint/no-explicit-any
+        const jobDescription = job.description || job.title;
+
+        // 2. Fetch the User's Latest Resume
+        const { data: resumes } = await supabase
+            .from("resumes")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1);
+
+        if (!resumes || resumes.length === 0) {
+            return NextResponse.json({ error: "No resume found. Please upload a resume first." }, { status: 400 });
+        }
+
+        const resume = resumes[0];
+        const resumeText = resume.parsed_content;
+
+        // 3. Prompt OpenAI to extract and align projects into JSON
+        const systemPrompt = `You are an expert Technical Recruiter and Portfolio Designer.
+You will be provided with a candidate's existing resume text and a specific target job description.
+Your task is to extract the candidate's most relevant projects, experiences, and technical skills that align perfectly with the target job description.
+
+You MUST completely adhere to the following strict JSON schema in your response:
+{
+  "summary": "A 1-2 sentence compelling summary of the candidate specifically tailored to why they are a great fit for this role.",
+  "skills": ["Skill 1", "Skill 2", "Skill 3"], // Minimum 5, maximum 15 key technical skills relevant to the job.
+  "projects": [
+    {
+      "name": "Project Name or Role",
+      "description": "A 2-3 sentence impactful description focusing on achievements and technologies used.",
+      "technologies": ["React", "Node", "PostgreSQL"] // Array of strings used in this specific project
+    }
+  ]
+}
+
+Rules:
+1. Extract a maximum of 3 highly relevant projects or major career experiences from the resume. Do NOT invent new projects.
+2. Only include skills the candidate actually possesses according to their resume, but prioritize those mentioned in the job description.
+3. Return ONLY valid JSON block. No markdown wrappers, no introductory text, no conversational responses. Just the raw JSON object.`;
+
+        const userPrompt = `
+TARGET JOB DETAILS:
+Title: ${job.title}
+Company: ${job.company}
+
+Job Description:
+${jobDescription.substring(0, 4000)}
+
+---
+
+CANDIDATE ORIGINAL RESUME TEXT:
+${resumeText.substring(0, 4000)}
+`;
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-4o", // use 4o for precise JSON shaping
             messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: userPromptContent }
+                { role: "user", content: userPrompt }
             ],
-            response_format: { type: "json_object" }
+            response_format: { type: "json_object" },
+            temperature: 0.5,
         });
 
-        const portfolioData = JSON.parse(completion.choices[0].message.content || "{}");
+        const rawJsonOutput = completion.choices[0].message.content || "{}";
 
-        // In a real app we'd save this JSON to a new table `portfolios` or store it as stringified JSON in `applications` or storage.
-        // For now we persist the stringified URL/Data to `applications`
-        const portDataStr = JSON.stringify(portfolioData);
+        // Validate JSON parses directly
+        let portfolioData;
+        try {
+            portfolioData = JSON.parse(rawJsonOutput);
+        } catch (e: unknown) {
+            console.error("Failed to parse OpenAI portfolio JSON:", e);
+            return NextResponse.json({ error: "Received malformed data from AI." }, { status: 500 });
+        }
 
-        await supabase.from("applications").upsert({
-            user_id: user.id,
-            job_id: job_id,
-            portfolio_url: portDataStr, // using this text column to store the json string for the generated portfolio view
-            updated_at: new Date().toISOString()
-        }, { onConflict: "user_id, job_id" });
+        // 4. Save the generated JSON string to the applications table
+        const { error: updateError } = await supabase
+            .from("applications")
+            .update({ portfolio_url: JSON.stringify(portfolioData) })
+            .eq("user_id", user.id)
+            .eq("job_id", job_id);
+
+        if (updateError) {
+            console.error("Failed to save generated portfolio to DB", updateError);
+            throw updateError;
+        }
 
         return NextResponse.json({ success: true, portfolio: portfolioData });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Portfolio generation error:", error);
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
     }
 }
