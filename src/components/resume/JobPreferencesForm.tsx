@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Target, X, Plus } from "lucide-react";
 
 export interface JobPreferences {
-    keywords: string;
+    keywords: string; // Used as desired_role
     location: string;
     skills: string[];
-    experience_years: number;
+    experience_years: number; // Used as experience_level conceptually
+    remote_preference: boolean;
 }
 
 interface JobPreferencesFormProps {
@@ -26,6 +28,7 @@ export function JobPreferencesForm({ initialPreferences, onSubmit, isLoading }: 
     const [location, setLocation] = useState(initialPreferences.location || "");
     const [experience, setExperience] = useState(initialPreferences.experience_years.toString());
     const [skills, setSkills] = useState<string[]>(initialPreferences.skills || []);
+    const [remotePreference, setRemotePreference] = useState(initialPreferences.remote_preference);
     const [newSkill, setNewSkill] = useState("");
 
     const handleAddSkill = () => {
@@ -45,7 +48,8 @@ export function JobPreferencesForm({ initialPreferences, onSubmit, isLoading }: 
             keywords: keywords.trim(),
             location: location.trim(),
             skills: skills,
-            experience_years: parseInt(experience) || 0
+            experience_years: parseInt(experience) || 0,
+            remote_preference: remotePreference
         });
     };
 
@@ -62,7 +66,7 @@ export function JobPreferencesForm({ initialPreferences, onSubmit, isLoading }: 
             </CardHeader>
             <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="keywords">Desired Role / Keywords</Label>
                             <Input
@@ -99,6 +103,17 @@ export function JobPreferencesForm({ initialPreferences, onSubmit, isLoading }: 
                                 required
                             />
                             <p className="text-xs text-muted-foreground">Used by the AI to filter senior vs junior roles.</p>
+                        </div>
+                        <div className="space-y-3 flex flex-col justify-center pt-6">
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="remote-match"
+                                    checked={remotePreference}
+                                    onCheckedChange={setRemotePreference}
+                                />
+                                <Label htmlFor="remote-match">Remote Preference</Label>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Toggle to prioritize remote jobs.</p>
                         </div>
                     </div>
 

@@ -32,24 +32,27 @@ export async function POST(req: NextRequest) {
         // Read the file buffer
         const arrayBuffer = await file.arrayBuffer();
 
-        // Parse PDF using pdf2json (Pure Node.js, no Workers, no Webpack interference)
-        const PDFParser = require("pdf2json");
+        let textContent = "";
 
-        const textContent = await new Promise<string>((resolve, reject) => {
-            const pdfParser = new PDFParser(null, 1);
-
-            pdfParser.on("pdfParser_dataError", (errData: any) => {
-                console.error(errData.parserError);
-                reject(errData.parserError);
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+            // Parse PDF using pdf2json
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const PDFParser = require("pdf2json");
+            textContent = await new Promise<string>((resolve, reject) => {
+                const pdfParser = new PDFParser(null, 1);
+                pdfParser.on("pdfParser_dataError", (errData: any) => reject(errData.parserError));
+                pdfParser.on("pdfParser_dataReady", () => resolve(pdfParser.getRawTextContent()));
+                pdfParser.parseBuffer(Buffer.from(arrayBuffer));
             });
-
-            pdfParser.on("pdfParser_dataReady", () => {
-                // pdfParser.getRawTextContent() returns the full text
-                resolve(pdfParser.getRawTextContent());
-            });
-
-            pdfParser.parseBuffer(Buffer.from(arrayBuffer));
-        });
+        } else if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" || file.name.endsWith(".docx")) {
+            // Parse DOCX using mammoth
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const mammoth = require("mammoth");
+            const result = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) });
+            textContent = result.value;
+        } else {
+            return NextResponse.json({ error: "Unsupported file format. Please upload PDF or DOCX." }, { status: 400 });
+        }
 
         if (!textContent || textContent.trim().length === 0) {
             return NextResponse.json({ error: "Could not extract text from PDF" }, { status: 400 });
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest) {
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert ATS (Applicant Tracking System). Extract the candidate's skills, key experience metrics, and keywords from the text. Respond ONLY with a valid JSON object matching this schema: { \"skills\": string[], \"experience_years\": number, \"keywords\": string[] }.",
+                    content: "You are an expert ATS (Applicant Tracking System). Extract the candidate's skills, technologies, key experience metrics, and keywords from the text. Respond ONLY with a valid JSON object matching this schema: { \"skills\": string[], \"technologies\": string[], \"experience_years\": number, \"keywords\": string[] }.",
                 },
                 {
                     role: "user",

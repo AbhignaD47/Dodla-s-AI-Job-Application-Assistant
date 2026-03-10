@@ -37,8 +37,13 @@ export function ResumeUpload() {
     };
 
     const validateAndSetFile = (file: File) => {
-        if (file.type !== "application/pdf") {
-            toast.error("Please upload a valid PDF file.");
+        const validTypes = [
+            "application/pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/msword"  // sometimes older generic doc type is used
+        ];
+        if (!validTypes.includes(file.type) && !file.name.endsWith('.docx') && !file.name.endsWith('.pdf')) {
+            toast.error("Please upload a valid PDF or DOCX file.");
             return;
         }
         if (file.size > 5 * 1024 * 1024) {
@@ -92,7 +97,7 @@ export function ResumeUpload() {
         <Card className="border-dashed border-2 bg-slate-50/50">
             <CardHeader className="text-center pb-2">
                 <CardTitle>Upload Your Resume</CardTitle>
-                <CardDescription>We support PDF formats up to 5MB.</CardDescription>
+                <CardDescription>We support PDF and DOCX formats up to 5MB.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col items-center justify-center py-10">
                 {!file ? (
@@ -109,7 +114,7 @@ export function ResumeUpload() {
                         <p className="text-sm font-medium mb-1">Drag and drop your file here, or</p>
                         <label className="text-sm text-primary font-semibold hover:underline cursor-pointer">
                             browse files
-                            <input type="file" className="hidden" accept=".pdf" onChange={handleFileInput} />
+                            <input type="file" className="hidden" accept=".pdf,.docx" onChange={handleFileInput} />
                         </label>
                     </div>
                 ) : (

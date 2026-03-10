@@ -19,6 +19,16 @@ export default async function ResumePage() {
         .limit(1)
         .single();
 
+    const { data: userPrefs } = await supabase
+        .from("user_preferences")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+    if (resume) {
+        resume.userPreferences = userPrefs;
+    }
+
     return (
         <div className="flex flex-col gap-6 max-w-4xl">
             <div className="flex flex-col gap-2">

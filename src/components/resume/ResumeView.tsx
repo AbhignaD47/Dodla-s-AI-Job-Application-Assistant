@@ -21,7 +21,14 @@ interface ResumeViewProps {
             skills: string[];
             experience_years: number;
             keywords: string[];
-        } | null;
+            technologies?: string[];
+            userPreferences?: {
+                desired_role: string | null;
+                experience_level: string | null;
+                location: string | null;
+                remote_preference: boolean;
+            } | null;
+        };
         created_at: string;
     }
 }
@@ -41,12 +48,13 @@ export function ResumeView({ resume }: ResumeViewProps) {
     const keywordsList = resume.skills?.keywords || [];
     const experienceYears = resume.skills?.experience_years || 0;
 
-    // Derived initial preferences
+    // Derived initial preferences, prioritizing DB over resume extraction
     const initialPrefs: JobPreferences = {
-        keywords: skillsList[0] || keywordsList[0] || "",
-        location: "", // or extract from resume if available, but blank is fine
+        keywords: resume.userPreferences?.desired_role || skillsList[0] || keywordsList[0] || "",
+        location: resume.userPreferences?.location || "",
         skills: skillsList,
-        experience_years: experienceYears
+        experience_years: resume.userPreferences?.experience_level ? parseInt(resume.userPreferences.experience_level) : experienceYears,
+        remote_preference: resume.userPreferences?.remote_preference !== undefined ? resume.userPreferences.remote_preference : true
     };
 
     const handleDelete = async () => {
@@ -72,6 +80,19 @@ export function ResumeView({ resume }: ResumeViewProps) {
         setIsFetchingJobs(true);
         setHasSearched(true);
         try {
+            // 1. Save preferences to database first
+            await fetch("/api/preferences", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    desired_role: preferences.keywords,
+                    experience_level: preferences.experience_years.toString(),
+                    location: preferences.location,
+                    remote_preference: preferences.remote_preference
+                }),
+            }).catch(e => console.error("Could not save preferences", e));
+
+            // 2. Fetch matches using the saved preferences
             const response = await fetch("/api/jobs", {
                 method: "POST",
                 headers: {

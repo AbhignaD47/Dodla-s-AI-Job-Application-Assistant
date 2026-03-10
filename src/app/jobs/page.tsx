@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Briefcase, Building2, Globe, MapPin } from "lucide-react";
 import { JobSearchForm } from "./JobSearchForm";
 
@@ -57,8 +58,8 @@ export default async function PublicJobsPage({
     let defaultQuery = "software developer";
     const defaultLocation = "";
 
-    // If no specific query is provided but user is logged in, try to use their resume data
-    if (!searchParams.q && user) {
+    // If user is logged in, check for their resume
+    if (user) {
         const { data: resumes } = await supabase
             .from("resumes")
             .select("skills")
@@ -66,12 +67,20 @@ export default async function PublicJobsPage({
             .order("created_at", { ascending: false })
             .limit(1);
 
-        if (resumes && resumes.length > 0 && resumes[0].skills) {
+        if (!resumes || resumes.length === 0) {
+            // Enforce Resume-First: if user has no resume, they must upload one
+            redirect("/dashboard/resume");
+        }
+
+        // If no specific query is provided, use resume data
+        if (!searchParams.q && resumes[0].skills) {
             const skills = resumes[0].skills;
             if (skills.skills && skills.skills.length > 0) {
                 defaultQuery = skills.skills[0];
             } else if (skills.keywords && skills.keywords.length > 0) {
                 defaultQuery = skills.keywords[0];
+            } else if (skills.technologies && skills.technologies.length > 0) {
+                defaultQuery = skills.technologies[0];
             }
         }
     }

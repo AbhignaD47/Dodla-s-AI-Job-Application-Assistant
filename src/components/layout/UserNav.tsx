@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Settings, User as UserIcon, CreditCard } from "lucide-react";
+import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
