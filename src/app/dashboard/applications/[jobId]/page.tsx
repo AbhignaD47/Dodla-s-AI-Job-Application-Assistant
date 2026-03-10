@@ -2,10 +2,11 @@ import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar, LayoutTemplate, FileSignature } from "lucide-react";
 import Link from "next/link";
 import { ResumeOptimizerView } from "@/components/resume/ResumeOptimizerView";
 import { PortfolioGeneratorView } from "@/components/resume/PortfolioGeneratorView";
+import { CoverLetterGeneratorView } from "@/components/resume/CoverLetterGeneratorView";
 
 export default async function ApplicationDetailPage({ params }: { params: { jobId: string } }) {
     const supabase = createClient();
@@ -129,6 +130,25 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                                 jobId={job.id}
                                 userId={user.id}
                                 hasExistingPortfolio={!!application.portfolio_url}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Cover Letter Workspace */}
+                    <Card className="border-indigo-100 shadow-md">
+                        <CardHeader className="bg-indigo-50/50 rounded-t-xl pb-4 border-b border-indigo-100">
+                            <div className="flex items-center gap-2">
+                                <FileSignature className="w-5 h-5 text-indigo-600" />
+                                <CardTitle className="text-lg text-indigo-900">Tailored Cover Letter</CardTitle>
+                            </div>
+                            <CardDescription className="text-indigo-700/80 mt-1">
+                                Generate a highly-targeted cover letter extracting exact proof points matching this role.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <CoverLetterGeneratorView
+                                jobId={job.id}
+                                initialCoverLetter={application.cover_letter_text}
                             />
                         </CardContent>
                     </Card>
