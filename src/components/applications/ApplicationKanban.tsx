@@ -59,29 +59,31 @@ export function ApplicationKanban({ initialApplications }: ApplicationKanbanProp
                                     </div>
                                 ) : (
                                     groupedApps[column.id]?.map((app, idx) => (
-                                        <Card key={`${app.jobs.id}-${idx}`} className="cursor-grab hover:border-brand/40 shadow-sm active:cursor-grabbing transition-colors">
-                                            <CardHeader className="p-4 pb-2">
-                                                <CardTitle className="text-base line-clamp-2 leading-tight">
-                                                    {app.jobs.title}
-                                                </CardTitle>
-                                                <div className="flex items-center text-sm text-muted-foreground mt-1">
-                                                    <Building2 className="w-3.5 h-3.5 mr-1" />
-                                                    <span className="truncate">{app.jobs.company}</span>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="p-4 pt-0">
-                                                <div className="flex justify-between items-center mt-3 pt-3 border-t">
-                                                    <span className="text-xs text-slate-400 font-medium">
-                                                        {new Date(app.created_at).toLocaleDateString()}
-                                                    </span>
-                                                    {app.jobs.applies_link && (
-                                                        <Link href={app.jobs.applies_link} target="_blank" prefetch={false} className="text-brand hover:text-brand/80 transition-colors">
-                                                            <ExternalLink className="w-4 h-4" />
-                                                        </Link>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
+                                        <Link href={`/dashboard/applications/${app.jobs.id}`} key={`${app.jobs.id}-${idx}`} className="block">
+                                            <Card className="cursor-grab hover:border-brand/40 shadow-sm active:cursor-grabbing transition-colors h-full">
+                                                <CardHeader className="p-4 pb-2">
+                                                    <CardTitle className="text-base line-clamp-2 leading-tight">
+                                                        {app.jobs.title}
+                                                    </CardTitle>
+                                                    <div className="flex items-center text-sm text-muted-foreground mt-1">
+                                                        <Building2 className="w-3.5 h-3.5 mr-1" />
+                                                        <span className="truncate">{app.jobs.company}</span>
+                                                    </div>
+                                                </CardHeader>
+                                                <CardContent className="p-4 pt-0">
+                                                    <div className="flex justify-between items-center mt-3 pt-3 border-t">
+                                                        <span className="text-xs text-slate-400 font-medium">
+                                                            {new Date(app.created_at).toLocaleDateString()}
+                                                        </span>
+                                                        {app.jobs.applies_link && (
+                                                            <Link href={app.jobs.applies_link} target="_blank" prefetch={false} className="text-brand hover:text-brand/80 transition-colors">
+                                                                <ExternalLink className="w-4 h-4" />
+                                                            </Link>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
                                     ))
                                 )}
                             </div>
