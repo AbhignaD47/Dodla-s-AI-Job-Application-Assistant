@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FileText, Briefcase, Trello, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, Briefcase, Trello, Settings, Target, Globe, Download, FileSignature, KanbanSquare, Mail } from "lucide-react";
 
 const navItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -11,6 +11,16 @@ const navItems = [
     { name: "Matches", href: "/jobs", icon: Briefcase },
     { name: "Kanban Board", href: "/dashboard/applications", icon: Trello },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
+const featureItems = [
+    { name: "AI Job Scoring", href: "/jobs", icon: Target, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { name: "Resume Optimizer per JD", href: "/dashboard", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { name: "JD-Specific Portfolio", href: "/dashboard", icon: Globe, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { name: "Portfolio PDF Export", href: "/dashboard", icon: Download, color: "text-slate-500", bg: "bg-slate-500/10" },
+    { name: "Cover Letter Generator", href: "/dashboard", icon: FileSignature, color: "text-pink-500", bg: "bg-pink-500/10" },
+    { name: "Kanban Planner", href: "/dashboard/applications", icon: KanbanSquare, color: "text-orange-500", bg: "bg-orange-500/10" },
+    { name: "Follow-Up Emails", href: "/dashboard", icon: Mail, color: "text-amber-500", bg: "bg-amber-500/10" },
 ];
 
 export function Sidebar() {
@@ -41,6 +51,26 @@ export function Sidebar() {
                     );
                 })}
             </nav>
+
+            <div className="flex flex-col gap-1 mt-6 mb-4 px-2">
+                <p className="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest px-2">Core AI Capabilities</p>
+                {featureItems.map((item) => (
+                    <Link key={item.name} href={item.href}>
+                        <div
+                            className={cn(
+                                "flex items-center gap-3 px-2 py-2 rounded-md text-xs font-semibold transition-all group hover:bg-slate-100",
+                            )}
+                        >
+                            <div className={cn("p-1.5 rounded-md", item.bg, item.color)}>
+                                <item.icon size={13} strokeWidth={2.5} />
+                            </div>
+                            <span className="text-slate-600 group-hover:text-slate-900 leading-tight">
+                                {item.name}
+                            </span>
+                        </div>
+                    </Link>
+                ))}
+            </div>
 
             <div className="mt-auto p-4 bg-slate-50 rounded-xl border border-slate-100 mb-4">
                 <p className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Credits</p>
