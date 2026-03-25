@@ -11,29 +11,67 @@ export async function POST(req: NextRequest) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-        const { job_id, type } = await req.json();
-        // type could be 'post_application' or 'post_interview'
+        const { job_id, lastInteraction } = await req.json();
 
-        const { data: job } = await supabase.from("jobs").select("*").eq("id", job_id).single();
-        if (!job) return NextResponse.json({ error: "Job not found." }, { status: 404 });
+        if (!job_id || !lastInteraction) {
+            return NextResponse.json({ error: "Job ID and Last Interaction context are required" }, { status: 400 });
+        }
 
-        const context = type === 'post_interview'
-            ? "I recently had an interview with them and want to send a thank you / follow up."
-            : "I applied a week ago and haven't heard back yet.";
+        // Fetch user info for name
+        const { data: userData } = await supabase
+            .from("users")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
 
-        const systemPrompt = `You are a professional communication coach. Write a polite, concise follow-up email to the recruiter/hiring manager for the following job at ${job.company} (${job.title}). Context: ${context}. Do not use placeholders like [Your Name] if you can avoid it, just write the body.`;
+        // Fetch the job
+        const { data: job } = await supabase
+            .from("jobs")
+            .select("*")
+            .eq("id", job_id)
+            .single();
+
+        if (!job) {
+            return NextResponse.json({ error: "Job not found." }, { status: 404 });
+        }
+
+        const systemPrompt = `You are an expert career coach and executive assistant. Write a short, highly professional follow-up email for a candidate applying for a job.
+        
+CRUCIAL RULES:
+1. Keep the email concise (maximum 3 short paragraphs).
+2. It must be polite, appreciative, and show enthusiasm for the role without being desperate or pushy.
+3. Use the candidate's name, the job title, and the company name provided.
+4. The context of the follow up is: "\${lastInteraction}". Write the email specifically addressing this context.
+5. Do NOT include markdown blocks like \`\`\` text, just return the raw string suitable for copy/pasting.
+6. The subject line should be included on the very first line prefixed with "Subject: ".`;
+
+        const userPrompt = `
+Context:
+Candidate Name: \${userData?.full_name || "Applicant"}
+Target Role: \${job.title}
+Company: \${job.company}
+Last Interaction / Purpose: \${lastInteraction}
+`;
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [{ role: "system", content: systemPrompt }],
+            model: "gpt-4o",
+            temperature: 0.6,
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ]
         });
 
         const emailText = completion.choices[0].message.content || "";
+
         return NextResponse.json({ success: true, email: emailText });
 
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+    } catch (error: unknown) {
+        console.error("Follow-up email generation error:", error);
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
     }
 }

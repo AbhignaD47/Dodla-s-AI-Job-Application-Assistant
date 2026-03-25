@@ -2,11 +2,14 @@ import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar, LayoutTemplate, FileSignature } from "lucide-react";
+import { ArrowLeft, Building2, Briefcase, Bot, ExternalLink, Calendar, LayoutTemplate, FileSignature, StickyNote } from "lucide-react";
 import Link from "next/link";
 import { ResumeOptimizerView } from "@/components/resume/ResumeOptimizerView";
 import { PortfolioGeneratorView } from "@/components/resume/PortfolioGeneratorView";
 import { CoverLetterGeneratorView } from "@/components/resume/CoverLetterGeneratorView";
+import { ApplicationNotesView } from "@/components/applications/ApplicationNotesView";
+import { FollowUpEmailGeneratorView } from "@/components/applications/FollowUpEmailGeneratorView";
+import { redirect } from "next/navigation";
 
 export default async function ApplicationDetailPage({ params }: { params: { jobId: string } }) {
     const supabase = createClient();
@@ -27,6 +30,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
             optimized_resume_url,
             portfolio_url,
             cover_letter_text,
+            notes,
             jobs (
                 id,
                 title,
@@ -44,6 +48,16 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
     }
 
     const job: any = Array.isArray(application.jobs) ? application.jobs[0] : application.jobs; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+    // Fetch the User's Latest Resume
+    const { data: resumes } = await supabase
+        .from("resumes")
+        .select("parsed_content")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+    const originalResumeText = resumes && resumes.length > 0 ? resumes[0].parsed_content : null;
 
     // Format the date
     const dateApplied = new Date(application.created_at).toLocaleDateString('en-US', {
@@ -110,6 +124,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                             <ResumeOptimizerView
                                 jobId={job.id}
                                 initialOptimizedText={application.optimized_resume_url}
+                                initialOriginalText={originalResumeText}
                             />
                         </CardContent>
                     </Card>
@@ -150,6 +165,41 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                                 jobId={job.id}
                                 initialCoverLetter={application.cover_letter_text}
                             />
+                        </CardContent>
+                    </Card>
+
+                    {/* Notes Workspace */}
+                    <Card className="border-amber-100 shadow-md">
+                        <CardHeader className="bg-amber-50/50 rounded-t-xl pb-4 border-b border-amber-100">
+                            <div className="flex items-center gap-2">
+                                <StickyNote className="w-5 h-5 text-amber-600" />
+                                <CardTitle className="text-lg text-amber-900">Application Notes</CardTitle>
+                            </div>
+                            <CardDescription className="text-amber-700/80 mt-1">
+                                Keep track of interview questions, recruiter emails, and personal reminders.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <ApplicationNotesView
+                                jobId={job.id}
+                                initialNotes={application.notes}
+                            />
+                        </CardContent>
+                    </Card>
+
+                    {/* Follow-Up Email Workspace */}
+                    <Card className="border-sky-100 shadow-md">
+                        <CardHeader className="bg-sky-50/50 rounded-t-xl pb-4 border-b border-sky-100">
+                            <div className="flex items-center gap-2">
+                                <FileSignature className="w-5 h-5 text-sky-600" />
+                                <CardTitle className="text-lg text-sky-900">Follow-Up Email</CardTitle>
+                            </div>
+                            <CardDescription className="text-sky-700/80 mt-1">
+                                Draft a professional, context-aware follow-up email based on your latest interaction.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <FollowUpEmailGeneratorView jobId={job.id} />
                         </CardContent>
                     </Card>
 

@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, Copy, Check } from "lucide-react";
+import { Loader2, Sparkles, Copy, Check, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface ResumeOptimizerViewProps {
     jobId: string;
     initialOptimizedText?: string | null;
+    initialOriginalText?: string | null;
 }
 
-export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptimizerViewProps) {
+export function ResumeOptimizerView({ jobId, initialOptimizedText, initialOriginalText }: ResumeOptimizerViewProps) {
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [optimizedContent, setOptimizedContent] = useState<string | null>(initialOptimizedText || null);
+    const [viewMode, setViewMode] = useState<"optimized" | "original">("optimized");
     const [hasCopied, setHasCopied] = useState(false);
 
     const handleOptimize = async () => {
@@ -31,6 +33,7 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptim
             }
 
             setOptimizedContent(data.optimized_resume_url);
+            setViewMode("optimized");
             toast.success("Resume optimized successfully!");
         } catch (error: unknown) {
             toast.error(error instanceof Error ? error.message : "Something went wrong.");
@@ -40,8 +43,9 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptim
     };
 
     const handleCopy = () => {
-        if (optimizedContent) {
-            navigator.clipboard.writeText(optimizedContent);
+        const textToCopy = viewMode === "optimized" ? optimizedContent : initialOriginalText;
+        if (textToCopy) {
+            navigator.clipboard.writeText(textToCopy);
             setHasCopied(true);
             toast.success("Copied to clipboard!");
             setTimeout(() => setHasCopied(false), 2000);
@@ -50,7 +54,7 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptim
 
     return (
         <div className="flex flex-col h-full bg-white rounded-b-xl min-h-[500px]">
-            {optimizedContent ? (
+            {optimizedContent || initialOriginalText ? (
                 <div className="flex flex-col h-full relative group">
                     <div className="absolute top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
@@ -73,9 +77,27 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptim
                         </Button>
                     </div>
 
+                    {/* Tabs / Toggle */}
+                    <div className="flex px-6 pt-4 gap-2 border-b border-slate-100">
+                        <button
+                            onClick={() => setViewMode("optimized")}
+                            className={\`pb-3 text-sm font-medium transition-colors border-b-2 \${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}\`}
+                        >
+                            <Sparkles className="inline w-3.5 h-3.5 mr-1.5" />
+                            Optimized Version
+                        </button>
+                        <button
+                            onClick={() => setViewMode("original")}
+                            className={\`pb-3 text-sm font-medium transition-colors border-b-2 \${viewMode === "original" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}\`}
+                        >
+                            <FileText className="inline w-3.5 h-3.5 mr-1.5" />
+                            Original Resume
+                        </button>
+                    </div>
+
                     <div className="flex-1 p-6 overflow-y-auto w-full prose prose-sm prose-slate max-w-none prose-headings:text-indigo-900 prose-a:text-indigo-600 outline-none">
                         <div className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-slate-800">
-                            {optimizedContent}
+                            {viewMode === "optimized" ? (optimizedContent || "No optimized content yet. Click Generate below.") : (initialOriginalText || "No original resume found.")}
                         </div>
                     </div>
 
@@ -91,7 +113,7 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText }: ResumeOptim
                             disabled={isOptimizing}
                             className="bg-white hover:bg-indigo-50 hover:text-indigo-700 border-indigo-200 text-indigo-600 transition-colors"
                         >
-                            {isOptimizing ? "Re-generating..." : "Regenerate"}
+                            {isOptimizing ? "Re-generating..." : (optimizedContent ? "Regenerate" : "Generate")}
                         </Button>
                     </div>
                 </div>

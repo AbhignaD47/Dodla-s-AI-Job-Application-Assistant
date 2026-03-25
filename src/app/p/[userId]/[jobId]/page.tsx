@@ -2,8 +2,9 @@ import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Printer, Briefcase, Mail, LayoutTemplate } from "lucide-react";
+import { Briefcase, Mail, LayoutTemplate } from "lucide-react";
 import Link from "next/link";
+import { ExportPdfButton } from "@/components/resume/ExportPdfButton";
 
 interface PortfolioPageProps {
     params: {
@@ -15,19 +16,6 @@ interface PortfolioPageProps {
 export default async function PortfolioPage({ params }: PortfolioPageProps) {
     const supabase = createClient();
     const { userId, jobId } = params;
-
-    // Fetch the application leveraging the service anon key (or just bypassing RLS if it's public)
-    // Actually, since this is a public share link, we want anyone to be able to see it if they have the UUIDs.
-    // If RLS prevents this, we might need a dedicated public query or use the service role key.
-    // Wait, the default Supabase anon key might be blocked by RLS for `applications`!
-    // Let's create a Supabase client that uses the service role key *just* for this endpoint to bypass RLS,
-    // OR we can just rely on the existing schema. Let's assume RLS allows read if user_id matches. But here, the viewer is *not* logged in.
-    // To safely bypass RLS on a server component for a specific public route, we construct a service role admin client.
-
-    // Instead, let's just make the query. If it fails due to RLS, we'll see it. 
-    // Many times, UUIDs acting as URLs are secured by obfuscation.
-    // To ensure the recruiter can read it, let's use the standard client for now, but we may need a rpc function or service key.
-    // We will use the standard client. If the user is not authenticated, Supabase returns null unless RLS allows public SELECT.
 
     const { data: application, error } = await supabase
         .from("applications")
@@ -47,7 +35,6 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
         .single();
 
     if (error || !application || !application.portfolio_url) {
-        // If not found or RLS blocks it, return 404
         return notFound();
     }
 
@@ -75,14 +62,8 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                         <Link href="/">
                             <Button variant="ghost" className="text-slate-600">Build Your Own</Button>
                         </Link>
-                        {/* The print trigger button relies on native window.print() */}
-                        <Button
-                            className="bg-slate-900 text-white hover:bg-slate-800"
-                            onClick={() => { if (typeof window !== 'undefined') window.print(); }}
-                        >
-                            <Printer className="w-4 h-4 mr-2" />
-                            Export PDF
-                        </Button>
+                        {/* Button that triggers server-side Puppeteer PDF generation and S3 storage */}
+                        <ExportPdfButton jobId={jobId} />
                     </div>
                 </div>
             </div>

@@ -6,6 +6,19 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || "dummy_key_for_build",
 });
 
+function cosineSimilarity(A: number[], B: number[]) {
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+    for (let i = 0; i < A.length; i++) {
+        dotProduct += A[i] * B[i];
+        normA += A[i] * A[i];
+        normB += B[i] * B[i];
+    }
+    if (normA === 0 || normB === 0) return 0;
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
 export async function POST(req: NextRequest) {
     try {
         const supabase = createClient();
@@ -15,7 +28,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // Attempt to parse body for user preferences if provided, or fetch from DB
         let userPreferences: any = {};
         try {
             userPreferences = await req.json();
@@ -23,7 +35,6 @@ export async function POST(req: NextRequest) {
             // Ignore if no body provided
         }
 
-        // Get the user's latest parsed resume
         const { data: resumes } = await supabase
             .from("resumes")
             .select("*")
@@ -36,12 +47,9 @@ export async function POST(req: NextRequest) {
         }
         const resume = resumes[0];
 
-        // Build the query for Adzuna
-        // Prefer the explicitly submitted keywords, then fallback to AI skills
         let searchTerm = userPreferences?.keywords || userPreferences?.desired_role;
 
         if (!searchTerm) {
-            // Fallback to top skill or first keyword from the parsed resume
             if (resume.skills?.skills && resume.skills.skills.length > 0) {
                 searchTerm = resume.skills.skills[0];
             } else if (resume.skills?.keywords && resume.skills.keywords.length > 0) {
@@ -51,8 +59,6 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        // Fetch from Adzuna API
-        // https://developer.adzuna.com/docs/search
         const adzunaAppId = "be001e44";
         const adzunaAppKey = "ffa3d1155d68cbdad175d4e716c9b170";
 
@@ -70,43 +76,63 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ matches: [] });
         }
 
-        // Prepare batch prompt for OpenAI to score all 15 jobs at once against the resume
+        // 1. EMBEDDINGS & COSINE SIMILARITY
+        const candidateText = resume.parsed_content.substring(0, 4000);
+        const textsToEmbed = [candidateText, ...jobs.map((j: any) => (j.title + " " + (j.description || "")).substring(0, 4000))];
+        
+        const embeddingsResponse = await openai.embeddings.create({
+            model: "text-embedding-3-small",
+            input: textsToEmbed
+        });
+
+        const resumeEmbedding = embeddingsResponse.data[0].embedding;
+        const jobEmbeddings = embeddingsResponse.data.slice(1).map(e => e.embedding);
+
+        const similarityScores = jobEmbeddings.map(emb => {
+            const sim = cosineSimilarity(resumeEmbedding, emb);
+            // Convert cosine sim (-1 to 1) to a 0-100 scale logically (usually texts are > 0)
+            return Math.max(0, Math.min(100, Math.round(sim * 100)));
+        });
+
+        // 2. LLM REQUIRED SKILLS EXTRACTION (RULE-BASED COMPONENT)
         const jobsPromptData = jobs.map((job: any) => ({
             id: job.id,
             title: job.title,
             company: job.company?.display_name || "Unknown Company",
-            description: job.description?.substring(0, 1000) // Truncate HTML/description to avoid token overflow
+            description: job.description?.substring(0, 1000)
         }));
 
-        const systemPrompt = `You are a highly capable AI Applicant Tracking System.
-You will receive a candidate's preferred skills/experience and resume summary, plus a list of job descriptions.
-For EACH job, calculate a relevance score (0-100) based on how well the candidate's skills and experience match the job requirements.
-Also identify any 'matching_skills' and 'missing_skills' based on their requested Core Skills.
-Respond ONLY with a valid JSON array of objects, where each object matches this schema:
+        const systemPrompt = `You are an AI Applicant Tracking System.
+You will evaluate a candidate against a list of jobs.
+Based on the candidate's skills and the jobs' requirements:
+1. Identify matching and missing skills.
+2. Provide a 1-sentence match summary.
+3. Provide a 'rule_based_score' from 0-100 indicating how well their skills explicitly match the job requirements.
+
+Respond ONLY with a JSON array of objects fitting this schema:
 {
   "job_id": string or number,
-  "ats_score": number, // 0 to 100
+  "rule_based_score": number,
   "skill_gap_analysis": {
     "matching": string[],
     "missing": string[]
   },
-  "match_summary": string // short 1 sentence summary of the match
+  "match_summary": string
 }`;
 
-        // Determine which skills and experience to tell OpenAI about
         const targetSkills = userPreferences?.skills?.length > 0 ? userPreferences.skills : resume.skills?.skills;
         const targetExp = userPreferences?.experience_years ?? resume.skills?.experience_years ?? 0;
 
         const userPromptContent = `
-Candidate Preferred Core Skills to Match:
+Candidate Core Skills:
 ${JSON.stringify(targetSkills, null, 2)}
 
-Candidate Target Experience Level: ${targetExp} years
+Candidate Experience: ${targetExp} years
 
-Candidate full parsed text excerpt (for context):
-${resume.parsed_content.substring(0, 2000)}
+Candidate excerpt:
+${resume.parsed_content.substring(0, 1500)}
 
-Jobs to evaluate:
+Jobs:
 ${JSON.stringify(jobsPromptData, null, 2)}
 `;
 
@@ -116,44 +142,51 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPromptContent }
             ],
-            response_format: { type: "json_object" } // Enforce JSON
+            response_format: { type: "json_object" }
         });
 
         const aiResponseStr = completion.choices[0].message.content || '{"matches": []}';
-        let scoredJobs: any[] = []; // eslint-disable-line @typescript-eslint/no-explicit-any
+        let scoredJobs: any[] = [];
 
         try {
             const parsedAiResponse = JSON.parse(aiResponseStr);
-            // Depending on how GPT formats it, it might be an array or an object with a key containing the array
             if (Array.isArray(parsedAiResponse)) {
                 scoredJobs = parsedAiResponse;
             } else {
-                // Find the first array-like property
                 const arrayKey = Object.keys(parsedAiResponse).find(k => Array.isArray(parsedAiResponse[k]));
                 if (arrayKey) {
                     scoredJobs = parsedAiResponse[arrayKey];
                 } else {
-                    scoredJobs = [parsedAiResponse]; // fallback
+                    scoredJobs = [parsedAiResponse];
                 }
             }
-        } catch (err: unknown) {
+        } catch (err) {
             console.error("OpenAI JSON parse error:", err);
-            // Try to recover by ignoring
             return NextResponse.json({ error: "Failed to score jobs" }, { status: 500 });
         }
 
-        // Filter jobs >= 70% relevance
+        // 3. COMBINE SCORES
         const finalMatches = [];
         const jobInserts = [];
         const matchInserts = [];
 
-        for (const job of jobs) {
-            const scoreData = scoredJobs.find(s => String(s.job_id) === String(job.id));
-            if (scoreData && scoreData.ats_score >= 70) {
+        for (let i = 0; i < jobs.length; i++) {
+            const job = jobs[i];
+            const simScore = similarityScores[i];
+            const scoreData = scoredJobs.find(s => String(s.job_id) === String(job.id)) || {
+                rule_based_score: 50,
+                skill_gap_analysis: { matching: [], missing: [] },
+                match_summary: "No summary available."
+            };
 
-                // Push to public.jobs table (upsert based on remotive_id)
+            // Final Score = 40% Embedding Similarity + 60% Rule-Based Skill Match
+            const finalScore = Math.round((simScore * 0.4) + (scoreData.rule_based_score * 0.6));
+
+            if (finalScore >= 60) { // Lowered threshold slightly since realistic cosine sims might lower average
+                scoreData.ats_score = finalScore; // Attach for frontend compatibility
+
                 jobInserts.push({
-                    remotive_id: String(job.id), // We keep the column name logic
+                    remotive_id: String(job.id),
                     title: job.title,
                     company: job.company?.display_name || "Unknown Company",
                     description: job.description || "",
@@ -172,10 +205,8 @@ ${JSON.stringify(jobsPromptData, null, 2)}
             }
         }
 
-        // Sort by highest relevance
         finalMatches.sort((a, b) => b.score.ats_score - a.score.ats_score);
 
-        // Persist cache to DB
         if (jobInserts.length > 0) {
             const { data: insertedJobs, error: jobInsertError } = await supabase
                 .from("jobs")
@@ -189,7 +220,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                         matchInserts.push({
                             user_id: user.id,
                             job_id: insertedJob.id,
-                            relevance_score: matchData.score.ats_score, // Map ats_score back to DB's relevance_score
+                            relevance_score: matchData.score.ats_score,
                             match_summary: {
                                 skill_gap_analysis: matchData.score.skill_gap_analysis,
                                 match_summary: matchData.score.match_summary
@@ -208,8 +239,8 @@ ${JSON.stringify(jobsPromptData, null, 2)}
 
         return NextResponse.json({ matches: finalMatches });
 
-    } catch (error: unknown) {
+    } catch (error: any) {
         console.error("Job match error:", error);
-        return NextResponse.json({ error: error instanceof Error ? error.message : "Internal Server Error" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
     }
 }
