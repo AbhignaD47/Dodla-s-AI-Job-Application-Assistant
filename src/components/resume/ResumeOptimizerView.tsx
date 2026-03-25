@@ -81,14 +81,14 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText, initialOrigin
                     <div className="flex px-6 pt-4 gap-2 border-b border-slate-100">
                         <button
                             onClick={() => setViewMode("optimized")}
-                            className={\`pb-3 text-sm font-medium transition-colors border-b-2 \${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}\`}
+                            className={`pb-3 text-sm font-medium transition-colors border-b-2 ${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
                         >
                             <Sparkles className="inline w-3.5 h-3.5 mr-1.5" />
                             Optimized Version
                         </button>
                         <button
                             onClick={() => setViewMode("original")}
-                            className={\`pb-3 text-sm font-medium transition-colors border-b-2 \${viewMode === "original" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}\`}
+                            className={`pb-3 text-sm font-medium transition-colors border-b-2 ${viewMode === "original" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"}`}
                         >
                             <FileText className="inline w-3.5 h-3.5 mr-1.5" />
                             Original Resume
