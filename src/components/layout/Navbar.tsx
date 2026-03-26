@@ -35,7 +35,7 @@ export async function Navbar() {
                     </Link>
 
                     <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-                        <Link href="/jobs" className="hover:text-primary transition-colors">Find Jobs</Link>
+
                         
                         <DropdownMenu>
                             <DropdownMenuTrigger className="flex items-center gap-1 hover:text-primary transition-colors outline-none cursor-pointer">
@@ -44,7 +44,7 @@ export async function Navbar() {
                             <DropdownMenuContent align="start" className="w-64 p-2 shadow-lg rounded-xl border-slate-200">
                                 <DropdownMenuLabel className="px-2 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-400">Core AI Tools</DropdownMenuLabel>
                                 <DropdownMenuItem className="cursor-pointer rounded-md p-0">
-                                    <Link href="/jobs" className="flex items-center gap-2 w-full px-2 py-1.5">
+                                    <Link href="/dashboard/score" className="flex items-center gap-2 w-full px-2 py-1.5">
                                         <div className="bg-emerald-100 p-1.5 rounded-md text-emerald-600"><Target size={14} /></div>
                                         <span>AI Job Scoring</span>
                                     </Link>

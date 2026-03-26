@@ -28,8 +28,8 @@ export default function Home() {
         </h1>
 
         <p className="text-xl lg:text-2xl text-slate-600 max-w-3xl mb-12 leading-relaxed font-medium">
-          Upload your resume once. Our autonomous engine finds roles, strictly scores ATS alignment 
-          mathematically, writes targeted cover letters, and builds dynamic custom portfolios—all in one place.
+          Upload your resume once. Our autonomous engine mathematically scores ATS alignment, 
+          writes targeted cover letters, and builds dynamic custom portfolios—all in one place.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center gap-6 mt-4">
@@ -37,11 +37,6 @@ export default function Home() {
             <Button size="lg" className="rounded-full px-10 h-16 text-lg font-bold bg-slate-900 text-white shadow-2xl hover:shadow-indigo-500/25 hover:bg-slate-800 transition-all hover:-translate-y-1">
               Enter Dashboard
               <ArrowRight className="ml-3 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link href="/jobs">
-            <Button size="lg" variant="outline" className="rounded-full px-10 h-16 text-lg font-bold bg-white/50 backdrop-blur-sm border-slate-200 hover:bg-white hover:border-slate-300 transition-all">
-              Explore Live Roles
             </Button>
           </Link>
         </div>
