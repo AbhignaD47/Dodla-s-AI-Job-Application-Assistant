@@ -86,92 +86,105 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
     };
 
     return (
-        <div className="space-y-8 pb-12">
+        <div className="space-y-10 pb-16 relative">
             {/* Input Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
                 
                 {/* Resume Input Area */}
-                <Card className="border-slate-200 shadow-sm border-t-4 border-t-indigo-500">
-                    <CardHeader className="bg-slate-50/50 pb-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2 text-slate-800">
-                                    <FileText className="w-5 h-5 text-indigo-500" />
-                                    Candidate Resume
-                                </CardTitle>
-                                <CardDescription className="mt-1">
-                                    Upload a new PDF/DOCX or ensure current text is accurate.
-                                </CardDescription>
+                <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-br from-indigo-500/20 to-purple-500/0 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-500"></div>
+                    <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
+                        <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
+                                        <div className="p-2 bg-indigo-100/80 rounded-xl text-indigo-600">
+                                            <FileText className="w-5 h-5" />
+                                        </div>
+                                        Candidate Resume
+                                    </CardTitle>
+                                    <CardDescription className="mt-2 text-sm font-medium text-slate-500">
+                                        Upload a new PDF/DOCX or ensure current text is accurate.
+                                    </CardDescription>
+                                </div>
+                                <div>
+                                    <input
+                                        type="file"
+                                        id="resume-upload"
+                                        className="hidden"
+                                        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                        onChange={handleFileUpload}
+                                    />
+                                    <label htmlFor="resume-upload">
+                                        <Button variant="outline" size="sm" className="cursor-pointer bg-white rounded-full px-4 shadow-sm border-slate-200 hover:bg-slate-50 hover:text-indigo-600 transition-colors" disabled={isUploading}>
+                                            {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                                            Upload File
+                                        </Button>
+                                    </label>
+                                </div>
                             </div>
-                            <div>
-                                <input
-                                    type="file"
-                                    id="resume-upload"
-                                    className="hidden"
-                                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                    onChange={handleFileUpload}
-                                />
-                                <label htmlFor="resume-upload">
-                                    <Button variant="outline" size="sm" className="cursor-pointer bg-white" disabled={isUploading}>
-                                        {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                                        Upload File
-                                    </Button>
-                                </label>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                        <Textarea 
-                            placeholder="Paste your plain text resume here, or upload a file above..."
-                            className="min-h-[250px] resize-y font-mono text-xs focus-visible:ring-indigo-500"
-                            value={resumeText}
-                            onChange={(e) => setResumeText(e.target.value)}
-                        />
-                    </CardContent>
-                </Card>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <Textarea 
+                                placeholder="Paste your plain text resume here, or upload a file above..."
+                                className="min-h-[280px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:border-indigo-500/50 transition-all shadow-inner"
+                                value={resumeText}
+                                onChange={(e) => setResumeText(e.target.value)}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
 
                 {/* JD Input Area */}
-                <Card className="border-slate-200 shadow-sm border-t-4 border-t-emerald-500">
-                    <CardHeader className="bg-slate-50/50 pb-4">
-                        <CardTitle className="flex items-center gap-2 text-slate-800">
-                            <Target className="w-5 h-5 text-emerald-500" />
-                            Target Job Description
-                        </CardTitle>
-                        <CardDescription className="mt-1">
-                            Paste the complete job description text to compare against.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                        <Textarea 
-                            placeholder="Paste the job description here..."
-                            className="min-h-[250px] resize-y font-mono text-xs focus-visible:ring-emerald-500"
-                            value={jdText}
-                            onChange={(e) => setJdText(e.target.value)}
-                        />
-                    </CardContent>
-                </Card>
+                <div className="relative group">
+                    <div className="absolute -inset-0.5 bg-gradient-to-bl from-emerald-500/20 to-teal-500/0 rounded-[2rem] blur-xl opacity-50 group-hover:opacity-100 transition duration-500"></div>
+                    <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
+                        <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
+                            <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
+                                <div className="p-2 bg-emerald-100/80 rounded-xl text-emerald-600">
+                                    <Target className="w-5 h-5" />
+                                </div>
+                                Target Job Description
+                            </CardTitle>
+                            <CardDescription className="mt-2 text-sm font-medium text-slate-500">
+                                Paste the complete job description text to compare against.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <Textarea 
+                                placeholder="Paste the job description here..."
+                                className="min-h-[280px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:border-emerald-500/50 transition-all shadow-inner"
+                                value={jdText}
+                                onChange={(e) => setJdText(e.target.value)}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
 
             </div>
 
-            <div className="flex justify-center">
-                <Button 
-                    size="lg" 
-                    onClick={handleAnalyze} 
-                    disabled={isAnalyzing || !resumeText || !jdText}
-                    className="bg-brand hover:bg-brand/90 text-white min-w-[200px] shadow-lg hover:shadow-xl transition-all h-14 text-lg rounded-full"
-                >
-                    {isAnalyzing ? (
-                        <>
-                            <Loader2 className="w-6 h-6 mr-3 animate-spin" />
-                            Analyzing Explicit Rules...
-                        </>
-                    ) : (
-                        <>
-                            <BarChart3 className="w-6 h-6 mr-3" />
-                            Run Deep ATS Analysis
-                        </>
-                    )}
-                </Button>
+            <div className="flex justify-center pt-4 relative z-20">
+                <div className="relative group inline-block">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500 group-hover:duration-200" />
+                    <Button 
+                        size="lg" 
+                        onClick={handleAnalyze} 
+                        disabled={isAnalyzing || !resumeText || !jdText}
+                        className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full border border-white/10 transition-transform active:scale-95 flex items-center shadow-2xl"
+                    >
+                        {isAnalyzing ? (
+                            <>
+                                <Loader2 className="w-6 h-6 mr-3 animate-spin text-pink-400" />
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">Analyzing Explicit Rules...</span>
+                            </>
+                        ) : (
+                            <>
+                                <BarChart3 className="w-6 h-6 mr-3 text-indigo-400" />
+                                Run Deep ATS Analysis
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
 
             {/* Output Dashboard */}

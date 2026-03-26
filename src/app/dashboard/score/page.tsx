@@ -23,13 +23,18 @@ export default async function ScorePage() {
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-6">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                    <Target className="w-8 h-8 text-brand" />
-                    Dedicated AI Job Scoring
+            <div className="mb-10 relative">
+                <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand/10 rounded-full blur-3xl -z-10" />
+                <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight flex items-center gap-4 mb-4">
+                    <div className="p-3 bg-brand/10 rounded-2xl text-brand">
+                        <Target className="w-8 h-8" />
+                    </div>
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+                        Dedicated AI Job Scoring
+                    </span>
                 </h1>
-                <p className="text-slate-500 mt-2 max-w-2xl text-lg">
-                    Validate your resume explicitly against any Job Description using our strict mathematical ATS algorithm. We extract required skills, keywords, and domain experience to calculate a concrete score and precise actionable improvements.
+                <p className="text-slate-500 max-w-2xl text-lg leading-relaxed font-medium">
+                    Validate your resume explicitly against any Job Description using our strict mathematical ATS algorithm. We extract exact required skills to calculate a concrete score and precise actionable improvements.
                 </p>
             </div>
 
