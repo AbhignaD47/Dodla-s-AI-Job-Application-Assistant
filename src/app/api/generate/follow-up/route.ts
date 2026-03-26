@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         const { data: userData } = await supabase
             .from("users")
             .select("full_name")
-            .eq("id", user.id)
+            .eq("id", (user?.id || "demo-user-id"))
             .single();
 
         // Fetch the job

@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         // Optional: Upload the file to Supabase storage 'resumes' bucket
         let fileUrl = null;
         try {
-            const fileName = `${user.id}/${Date.now()}_${file.name}`;
+            const fileName = `${(user?.id || "demo-user-id")}/${Date.now()}_${file.name}`;
             const { data, error } = await supabase.storage
                 .from("resumes")
                 .upload(fileName, arrayBuffer, {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
         const { data: resumeRecord, error: dbError } = await supabase
             .from("resumes")
             .insert({
-                user_id: user.id,
+                user_id: (user?.id || "demo-user-id"),
                 file_url: fileUrl,
                 parsed_content: textContent,
                 skills: extraction,

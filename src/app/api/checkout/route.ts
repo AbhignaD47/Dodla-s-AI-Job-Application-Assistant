@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
             const { error: usageError } = await supabase.from('promo_code_usage').insert({
                 promo_id: promoId,
-                user_id: user.id
+                user_id: (user?.id || "demo-user-id")
             });
 
             if (usageError) {
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
 
             // Create Payment Record
             const { data: paymentRecord } = await supabase.from('payments').insert({
-                user_id: user.id,
+                user_id: (user?.id || "demo-user-id"),
                 amount: 0,
                 currency: 'INR',
                 status: 'completed',
@@ -87,11 +87,11 @@ export async function POST(req: NextRequest) {
             }).select().single();
 
             // Grant credits and subscription
-            const { data: dbUser } = await supabase.from('users').select('credits').eq('id', user.id).single();
+            const { data: dbUser } = await supabase.from('users').select('credits').eq('id', (user?.id || "demo-user-id")).single();
             const currentCredits = dbUser?.credits || 0;
 
             // Handle rollover 50%
-            const { data: prevSub } = await supabase.from('subscriptions').select('*').eq('user_id', user.id).eq('status', 'active').single();
+            const { data: prevSub } = await supabase.from('subscriptions').select('*').eq('user_id', (user?.id || "demo-user-id")).eq('status', 'active').single();
             let rollover = 0;
             if (prevSub && currentCredits > 0) {
                 rollover = Math.floor(currentCredits * 0.5);
@@ -99,14 +99,14 @@ export async function POST(req: NextRequest) {
 
             const totalCredits = plan.credits + rollover;
 
-            await supabase.from('users').update({ credits: currentCredits > 0 ? totalCredits : plan.credits }).eq('id', user.id);
+            await supabase.from('users').update({ credits: currentCredits > 0 ? totalCredits : plan.credits }).eq('id', (user?.id || "demo-user-id"));
 
             // Upsert Subscription
             const endDate = new Date();
             endDate.setDate(endDate.getDate() + plan.validity);
 
             await supabase.from('subscriptions').upsert({
-                user_id: user.id,
+                user_id: (user?.id || "demo-user-id"),
                 plan_type: plan_type,
                 status: 'active',
                 current_period_end: endDate.toISOString(),
@@ -119,14 +119,14 @@ export async function POST(req: NextRequest) {
         const options = {
             amount: finalAmount * 100, // INR in paise
             currency: "INR",
-            receipt: `receipt_${user.id}_${Date.now()}`
+            receipt: `receipt_${(user?.id || "demo-user-id")}_${Date.now()}`
         };
 
         const order = await razorpay.orders.create(options);
 
         // Save pending payment record to DB
         await supabase.from('payments').insert({
-            user_id: user.id,
+            user_id: (user?.id || "demo-user-id"),
             amount: finalAmount,
             currency: "INR",
             status: "pending",

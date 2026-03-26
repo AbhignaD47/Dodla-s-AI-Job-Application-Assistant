@@ -7,7 +7,7 @@ export default async function ApplicationsPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        console.log("No user session - fallback to open tool mode");
     }
 
     // Fetch the user's applications joined with the job details
@@ -23,7 +23,7 @@ export default async function ApplicationsPage() {
                 applies_link
             )
         `)
-        .eq("user_id", user.id);
+        .eq("user_id", (user?.id || "demo-user-id"));
 
     return (
         <div className="flex flex-col gap-6 h-full min-h-[calc(100vh-8rem)]">

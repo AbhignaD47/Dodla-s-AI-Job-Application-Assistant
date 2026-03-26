@@ -16,7 +16,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        console.log("No user session - fallback to open tool mode");
     }
 
     const jobId = params.jobId;
@@ -39,7 +39,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                 applies_link
             )
         `)
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .eq("job_id", jobId)
         .single();
 
@@ -53,7 +53,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
     const { data: resumes } = await supabase
         .from("resumes")
         .select("parsed_content")
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .order("created_at", { ascending: false })
         .limit(1);
 
@@ -143,7 +143,7 @@ export default async function ApplicationDetailPage({ params }: { params: { jobI
                         <CardContent className="p-0">
                             <PortfolioGeneratorView
                                 jobId={job.id}
-                                userId={user.id}
+                                userId={(user?.id || "demo-user-id")}
                                 hasExistingPortfolio={!!application.portfolio_url}
                             />
                         </CardContent>

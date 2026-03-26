@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
             .from("user_preferences")
             .upsert(
                 {
-                    user_id: user.id,
+                    user_id: (user?.id || "demo-user-id"),
                     desired_role: desired_role || null,
                     experience_level: experience_level || null,
                     location: location || null,

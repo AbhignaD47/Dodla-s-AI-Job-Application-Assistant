@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
         await browser.close();
 
         // Save PDF to Supabase Storage (acting as S3)
-        const fileName = `\${user.id}/\${job_id}_\${Date.now()}.pdf`;
+        const fileName = `\${(user?.id || "demo-user-id")}/\${job_id}_\${Date.now()}.pdf`;
         const { error: uploadError } = await supabase.storage
             .from("resumes") // Reuse 'resumes' bucket if 'portfolios' is not explicitly guaranteed
             .upload(fileName, pdfBuffer, {

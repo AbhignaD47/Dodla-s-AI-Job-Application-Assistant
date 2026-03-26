@@ -36,37 +36,28 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     // Protect the admin route
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!user) {
-            // no user, redirect to login
-            const url = request.nextUrl.clone()
-            url.pathname = '/login'
-            return NextResponse.redirect(url)
-        }
+    // if (request.nextUrl.pathname.startsWith('/admin')) {
+    //     if (!user) {
+    //         const url = request.nextUrl.clone()
+    //         url.pathname = '/'
+    //         return NextResponse.redirect(url)
+    //     }
+    //
+    //     const { data: dbUser } = await supabase
+    //         .from('users')
+    //         .select('is_admin')
+    //         .eq('id', user.id)
+    //         .single()
+    //
+    //     if (!dbUser?.is_admin) {
+    //         const url = request.nextUrl.clone()
+    //         url.pathname = '/dashboard'
+    //         return NextResponse.redirect(url)
+    //     }
+    // }
 
-        // Checking our custom public.users table to see if they are admin
-        const { data: dbUser } = await supabase
-            .from('users')
-            .select('is_admin')
-            .eq('id', user.id)
-            .single()
-
-        if (!dbUser?.is_admin) {
-            // not admin, redirect to dash
-            const url = request.nextUrl.clone()
-            url.pathname = '/dashboard'
-            return NextResponse.redirect(url)
-        }
-    }
-
-    // Protect the dashboard routes
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
-        if (!user) {
-            const url = request.nextUrl.clone()
-            url.pathname = '/login'
-            return NextResponse.redirect(url)
-        }
-    }
+    // Dashboard routes are no longer strictly locked out, acting as open tools
+    // We allow users to enter without login.
 
     return supabaseResponse
 }

@@ -66,63 +66,63 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             
             {/* Feature 1 */}
-            <div className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+            <Link href="/dashboard/score" className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between block cursor-pointer">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-indigo-500/10 transition-colors" />
               <div>
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-indigo-600">
                   <Target size={28} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">Mathematical ATS Scoring</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">Mathematical ATS Scoring <span className="inline-block transition-transform group-hover:translate-x-1">→</span></h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   We don't hallucinate scores. We map exact skill intersections from standard JSON output and rigidly calculate required vs secondary arrays.
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Feature 2 */}
-            <div className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+            <Link href="/dashboard/resume" className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between block cursor-pointer">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-purple-500/10 transition-colors" />
               <div>
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-purple-600">
                   <FileText size={28} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">Resume Optimization</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-purple-600 transition-colors">Resume Optimization <span className="inline-block transition-transform group-hover:translate-x-1">→</span></h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   Automatically rewrites your bullet points in real-time. Instantly copy the optimized plaintext to beat the specific JD filters.
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Feature 3 */}
-            <div className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+            <Link href="/dashboard" className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-pink-200 hover:shadow-xl hover:shadow-pink-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between block cursor-pointer">
               <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-pink-500/10 transition-colors" />
               <div>
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-pink-600">
                   <Globe size={28} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">JD-Specific Portfolio</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-pink-600 transition-colors">JD-Specific Portfolio <span className="inline-block transition-transform group-hover:translate-x-1">→</span></h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   Generate an entire HTML portfolio tailored entirely around the JD requirements, omitting irrelevant skills perfectly.
                 </p>
               </div>
-            </div>
+            </Link>
             
             {/* Feature 4 */}
-            <div className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between">
+            <Link href="/dashboard" className="group relative bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 overflow-hidden flex flex-col justify-between block cursor-pointer">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-emerald-500/10 transition-colors" />
               <div>
                 <div className="w-14 h-14 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6 text-emerald-600">
                   <Download size={28} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">Serverless PDF Exports</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-emerald-600 transition-colors">Serverless PDF Exports <span className="inline-block transition-transform group-hover:translate-x-1">→</span></h3>
                 <p className="text-slate-600 leading-relaxed font-medium">
                   We integrated `puppeteer-core` natively on Vercel endpoints to seamlessly export dynamically generated portfolios to beautiful A4 PDFs.
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Feature 5 & 6 (Merged for visual flow on grid) */}
-            <div className="lg:col-span-2 group relative bg-indigo-900 rounded-3xl p-8 border border-indigo-800 hover:shadow-2xl hover:shadow-indigo-900/20 transition-all duration-300 overflow-hidden flex flex-col justify-between text-white">
+            <Link href="/dashboard/applications" className="lg:col-span-2 group relative bg-indigo-900 rounded-3xl p-8 border border-indigo-800 hover:shadow-2xl hover:shadow-indigo-900/20 transition-all duration-300 overflow-hidden flex flex-col justify-between text-white block cursor-pointer">
               <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl -mr-10 -mt-10" />
               <div className="absolute bottom-0 right-0 p-8 opacity-20">
                 <KanbanSquare size={120} strokeWidth={1} />
@@ -131,12 +131,12 @@ export default function Home() {
                 <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center mb-6 text-indigo-200">
                   <RocketIcon size={28} strokeWidth={2.5} />
                 </div>
-                <h3 className="text-3xl font-bold text-white mb-4">Kanban Tracking & Cover Letters</h3>
+                <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-indigo-100 transition-colors">Kanban Tracking & Cover Letters <span className="inline-block transition-transform group-hover:translate-x-2">→</span></h3>
                 <p className="text-indigo-200 leading-relaxed font-medium max-w-lg text-lg">
                   Visually manage state flow via drag-and-drop kanban boards, attach sticky persistent notes, and autonomously generate hyper-personalized cover letters and follow-up emails in one native workflow.
                 </p>
               </div>
-            </div>
+            </Link>
 
           </div>
         </div>

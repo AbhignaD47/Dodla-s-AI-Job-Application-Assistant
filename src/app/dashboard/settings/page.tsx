@@ -12,19 +12,19 @@ export default async function SettingsPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        console.log("No user session - fallback to open tool mode");
     }
 
     const { data: profile } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", (user?.id || "demo-user-id"))
         .single();
 
     const { data: subscription } = await supabase
         .from("subscriptions")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(1)

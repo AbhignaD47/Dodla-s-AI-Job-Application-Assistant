@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
         const { data: resumes } = await supabase
             .from("resumes")
             .select("*")
-            .eq("user_id", user.id)
+            .eq("user_id", (user?.id || "demo-user-id"))
             .order("created_at", { ascending: false })
             .limit(1);
 
@@ -218,7 +218,7 @@ ${JSON.stringify(jobsPromptData, null, 2)}
                     const matchData = finalMatches.find(m => String(m.job.id) === String(insertedJob.remotive_id));
                     if (matchData) {
                         matchInserts.push({
-                            user_id: user.id,
+                            user_id: (user?.id || "demo-user-id"),
                             job_id: insertedJob.id,
                             relevance_score: matchData.score.ats_score,
                             match_summary: {

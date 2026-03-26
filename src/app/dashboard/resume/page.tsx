@@ -8,13 +8,13 @@ export default async function ResumePage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        console.log("No user session - fallback to open tool mode");
     }
 
     const { data: resume } = await supabase
         .from("resumes")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
@@ -22,7 +22,7 @@ export default async function ResumePage() {
     const { data: userPrefs } = await supabase
         .from("user_preferences")
         .select("*")
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .single();
 
     if (resume) {

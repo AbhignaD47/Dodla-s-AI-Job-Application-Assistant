@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         const { data: dbUser } = await supabase
             .from("users")
             .select("credits, is_admin")
-            .eq("id", user.id)
+            .eq("id", (user?.id || "demo-user-id"))
             .single();
 
         if (!dbUser) {
@@ -40,16 +40,16 @@ export async function POST(req: NextRequest) {
             // Here we simulate it with sequential updates.
             const { data: appData, error: appError } = await supabase
                 .from("applications")
-                .upsert({ user_id: user.id, job_id, status: "in_progress", updated_at: new Date().toISOString() })
+                .upsert({ user_id: (user?.id || "demo-user-id"), job_id, status: "in_progress", updated_at: new Date().toISOString() })
                 .select()
                 .single();
 
             if (appError) throw appError;
 
             if (deduction > 0) {
-                await supabase.from("users").update({ credits: credits - deduction }).eq("id", user.id);
+                await supabase.from("users").update({ credits: credits - deduction }).eq("id", (user?.id || "demo-user-id"));
                 await supabase.from("credit_transactions").insert({
-                    user_id: user.id,
+                    user_id: (user?.id || "demo-user-id"),
                     amount: -deduction,
                     type: "deduction",
                     reference: `start_application_${job_id}`
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
             const { data: appData, error: appError } = await supabase
                 .from("applications")
                 .update({ status: "applied", updated_at: new Date().toISOString() })
-                .eq("user_id", user.id)
+                .eq("user_id", (user?.id || "demo-user-id"))
                 .eq("job_id", job_id)
                 .select()
                 .single();
@@ -72,9 +72,9 @@ export async function POST(req: NextRequest) {
             if (appError) throw appError;
 
             if (deduction > 0) {
-                await supabase.from("users").update({ credits: credits - deduction }).eq("id", user.id);
+                await supabase.from("users").update({ credits: credits - deduction }).eq("id", (user?.id || "demo-user-id"));
                 await supabase.from("credit_transactions").insert({
-                    user_id: user.id,
+                    user_id: (user?.id || "demo-user-id"),
                     amount: -deduction,
                     type: "deduction",
                     reference: `mark_applied_${job_id}`
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
             const { data: appData, error: appError } = await supabase
                 .from("applications")
                 .update({ status: new_status, updated_at: new Date().toISOString() })
-                .eq("user_id", user.id)
+                .eq("user_id", (user?.id || "demo-user-id"))
                 .eq("job_id", job_id)
                 .select()
                 .single();
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
             const { data: appData, error: appError } = await supabase
                 .from("applications")
                 .update({ notes: notes || "", updated_at: new Date().toISOString() })
-                .eq("user_id", user.id)
+                .eq("user_id", (user?.id || "demo-user-id"))
                 .eq("job_id", job_id)
                 .select()
                 .single();

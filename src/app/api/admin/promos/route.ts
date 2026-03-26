@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const { data: dbUser } = await supabase.from('users').select('is_admin').eq('id', user.id).single();
+        const { data: dbUser } = await supabase.from('users').select('is_admin').eq('id', (user?.id || "demo-user-id")).single();
         if (!dbUser?.is_admin) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
         const { action } = await req.json();

@@ -8,14 +8,14 @@ export default async function ScorePage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect("/login");
+        console.log("No user session - fallback to open tool mode");
     }
 
     // Fetch the User's Latest Resume automatically to pre-fill
     const { data: resumes } = await supabase
         .from("resumes")
         .select("parsed_content")
-        .eq("user_id", user.id)
+        .eq("user_id", (user?.id || "demo-user-id"))
         .order("created_at", { ascending: false })
         .limit(1);
 

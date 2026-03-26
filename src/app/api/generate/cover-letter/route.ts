@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         const { data: resumes } = await supabase
             .from("resumes")
             .select("*")
-            .eq("user_id", user.id)
+            .eq("user_id", (user?.id || "demo-user-id"))
             .order("created_at", { ascending: false })
             .limit(1);
 
@@ -82,7 +82,7 @@ ${job.description.substring(0, 4000)}
         await supabase
             .from("applications")
             .upsert({
-                user_id: user.id,
+                user_id: (user?.id || "demo-user-id"),
                 job_id: job_id,
                 cover_letter_text: coverLetterText,
                 updated_at: new Date().toISOString()

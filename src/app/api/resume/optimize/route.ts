@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
                     description
                 )
             `)
-            .eq("user_id", user.id)
+            .eq("user_id", (user?.id || "demo-user-id"))
             .eq("job_id", job_id)
             .single();
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         const { data: resumes } = await supabase
             .from("resumes")
             .select("*")
-            .eq("user_id", user.id)
+            .eq("user_id", (user?.id || "demo-user-id"))
             .order("created_at", { ascending: false })
             .limit(1);
 
@@ -100,7 +100,7 @@ ${resumeText.substring(0, 4000)}
         const { error: updateError } = await supabase
             .from("applications")
             .update({ optimized_resume_url: optimizedMarkdown })
-            .eq("user_id", user.id)
+            .eq("user_id", (user?.id || "demo-user-id"))
             .eq("job_id", job_id);
 
         if (updateError) {
