@@ -100,11 +100,19 @@ export async function POST(req: NextRequest) {
             // Proceed even if storage fails, we still have the parsed text
         }
 
-        // Store in database
+        if (!user) {
+            // Stateless open mode: Return the parsed content directly without hitting the DB to avoid Foreign Key violations.
+            return NextResponse.json({ 
+                success: true, 
+                resume: { parsed_content: textContent, skills: extraction } 
+            }, { status: 200, headers: corsHeaders });
+        }
+
+        // Store in database for authenticated users
         const { data: resumeRecord, error: dbError } = await supabase
             .from("resumes")
             .insert({
-                user_id: (user?.id || "demo-user-id"),
+                user_id: user.id,
                 file_url: fileUrl,
                 parsed_content: textContent,
                 skills: extraction,
@@ -113,7 +121,7 @@ export async function POST(req: NextRequest) {
             .single();
 
         if (dbError) {
-            return NextResponse.json({ error: "Failed to save resume" }, { status: 500, headers: corsHeaders });
+            return NextResponse.json({ error: "Failed to save resume securely" }, { status: 500, headers: corsHeaders });
         }
 
         return NextResponse.json({ success: true, resume: resumeRecord }, { status: 200, headers: corsHeaders });
