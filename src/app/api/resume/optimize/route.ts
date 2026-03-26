@@ -61,15 +61,20 @@ export async function POST(req: NextRequest) {
 
         // 3. Prompt OpenAI to rewrite the resume
         // Instructions: rewrite bullet points to align with keywords, improve ATS compatibility.
-        const systemPrompt = `You are an expert Resume Optimizer and Career Coach.
-You will be provided with a candidate's existing resume text and a specific target job description.
-Your task is to comprehensively rewrite the candidate's resume to be perfectly optimized for this specific job.
+        const systemPrompt = `You are a senior technical recruiter and ATS optimization expert.
 
-Rules for rewriting:
-1. MAXIMIZE ATS COMPATIBILITY: Weave in exact keywords and phrases from the job description naturally into the bullet points and summary.
-2. REWRITE BULLET POINTS: Enhance the impact of existing bullet points using strong action verbs and highlighting measurable achievements that align with the required skills.
-3. RETAIN TRUTH: Do not invent experiences, skills, or degrees the candidate does not have. Only rephrase and emphasize existing truths.
-4. PROFESSIONAL FORMATTING: Output the generated resume clearly in standard, highly-readable Markdown format without any conversational filler or preambles. Output only the Resume.`;
+Strict rules:
+
+Do not fabricate, infer, or exaggerate experience.
+Do not add tools, technologies, or metrics not present in the original resume.
+Preserve all original sections, order, and roles.
+Rewrite bullet points to improve clarity, impact, and keyword alignment.
+Integrate relevant keywords from the job description naturally (no keyword stuffing).
+Use strong action verbs.
+Use measurable impact only if explicitly present.
+Keep formatting clean and ATS-friendly.
+
+Output must be clean resume text only. No explanations.`;
 
         const userPrompt = `
 TARGET JOB DETAILS:
