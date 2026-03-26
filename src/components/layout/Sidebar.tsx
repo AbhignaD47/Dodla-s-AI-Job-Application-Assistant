@@ -3,18 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, FileText, Briefcase, Trello, Settings, Target, Globe, Download, FileSignature, KanbanSquare, Mail } from "lucide-react";
+import { LayoutDashboard, FileText, Trello, Settings, Target, Globe, Download, FileSignature, KanbanSquare, Mail } from "lucide-react";
 
 const navItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Resume", href: "/dashboard/resume", icon: FileText },
-    { name: "Matches", href: "/jobs", icon: Briefcase },
     { name: "Kanban Board", href: "/dashboard/applications", icon: Trello },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
 
 const featureItems = [
-    { name: "AI Job Scoring", href: "/jobs", icon: Target, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { name: "AI Job Scoring", href: "/dashboard/score", icon: Target, color: "text-emerald-500", bg: "bg-emerald-500/10" },
     { name: "Resume Optimizer per JD", href: "/dashboard", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
     { name: "JD-Specific Portfolio", href: "/dashboard", icon: Globe, color: "text-purple-500", bg: "bg-purple-500/10" },
     { name: "Portfolio PDF Export", href: "/dashboard", icon: Download, color: "text-slate-500", bg: "bg-slate-500/10" },
