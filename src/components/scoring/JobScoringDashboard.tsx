@@ -169,12 +169,12 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
 
             <div className="flex justify-center pt-4 relative z-20">
                 <div className="relative group inline-block">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500 group-hover:duration-200" />
+                    <div className="absolute -inset-1 pointer-events-none bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500 group-hover:duration-200" />
                     <Button 
                         size="lg" 
                         onClick={handleAnalyze} 
-                        disabled={isAnalyzing || !resumeText || !jdText}
-                        className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full border border-white/10 transition-transform active:scale-95 flex items-center shadow-2xl"
+                        disabled={isAnalyzing}
+                        className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full border border-white/10 transition-transform active:scale-95 flex items-center shadow-2xl disabled:opacity-75 disabled:cursor-wait"
                     >
                         {isAnalyzing ? (
                             <>
