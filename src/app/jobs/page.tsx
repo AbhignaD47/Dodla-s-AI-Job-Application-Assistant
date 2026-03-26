@@ -97,7 +97,7 @@ export default async function PublicJobsPage({
                     Curated Tech Jobs
                 </h1>
                 <p className="text-xl text-muted-foreground justify-center max-w-2xl mx-auto">
-                    {user ? "Explore remote and local opportunities. Finding matches based on your profile!" : "Discover high-quality opportunities. Sign in to unlock localized AI-powered match scoring and auto-generated cover letters."}
+                    {user ? "Explore remote and local opportunities. Finding matches based on your profile!" : "Discover high-quality opportunities. Open the dashboard to utilize AI-powered tools."}
                 </p>
 
                 <JobSearchForm initialQuery={searchParams.q || ""} initialLocation={searchParams.location || ""} />
@@ -115,9 +115,9 @@ export default async function PublicJobsPage({
                         </Button>
                     </Link>
                 ) : (
-                    <Link href="/login">
+                    <Link href="/dashboard">
                         <Button variant="outline" className="text-brand border-brand/50 hover:bg-brand/10">
-                            Sign In for AI Matches
+                            Enter Dashboard
                             <span className="ml-2">✨</span>
                         </Button>
                     </Link>
@@ -177,9 +177,9 @@ export default async function PublicJobsPage({
                                     </Button>
                                 </Link>
                             ) : (
-                                <Link href="/login">
+                                <Link href="/dashboard">
                                     <Button size="sm" variant="ghost" className="text-brand hover:text-brand hover:bg-brand/10 group">
-                                        Match & Apply
+                                        Open Tools
                                         <span className="opacity-0 group-hover:opacity-100 transition-opacity ml-1">→</span>
                                     </Button>
                                 </Link>

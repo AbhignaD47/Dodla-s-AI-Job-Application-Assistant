@@ -102,25 +102,14 @@ export async function Navbar() {
                                     </Button>
                                 </Link>
                             )}
-                            <Link href="/dashboard">
-                                <Button variant="ghost" size="sm" className="hidden sm:flex hover:bg-slate-100">
-                                    Dashboard
-                                </Button>
-                            </Link>
                             <UserNav user={user} />
                         </>
-                    ) : (
-                        <>
-                            <Link href="/login" className="text-sm font-medium hover:text-primary transition-colors hidden sm:block">
-                                Sign In
-                            </Link>
-                            <Link href="/signup">
-                                <Button className="bg-primary hover:bg-primary/90 text-white rounded-full shadow-md hover:shadow-lg transition-all px-6">
-                                    Get Started
-                                </Button>
-                            </Link>
-                        </>
-                    )}
+                    ) : null}
+                    <Link href="/dashboard">
+                        <Button className="bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-md transition-all px-6">
+                            Open App
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </header>
