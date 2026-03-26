@@ -115,12 +115,16 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
                                         accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                         onChange={handleFileUpload}
                                     />
-                                    <label htmlFor="resume-upload">
-                                        <Button variant="outline" size="sm" className="cursor-pointer bg-white rounded-full px-4 shadow-sm border-slate-200 hover:bg-slate-50 hover:text-indigo-600 transition-colors" disabled={isUploading}>
-                                            {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
-                                            Upload File
-                                        </Button>
-                                    </label>
+                                    <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        className="cursor-pointer bg-white rounded-full px-4 shadow-sm border-slate-200 hover:bg-slate-50 hover:text-indigo-600 transition-colors" 
+                                        disabled={isUploading}
+                                        onClick={() => document.getElementById("resume-upload")?.click()}
+                                    >
+                                        {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
+                                        Upload File
+                                    </Button>
                                 </div>
                             </div>
                         </CardHeader>
