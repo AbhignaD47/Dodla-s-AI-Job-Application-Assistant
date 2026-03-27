@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, Copy, Check, FileText, Download } from "lucide-react";
 import { toast } from "sonner";
-import { exportTemplateToPDF } from "@/utils/export";
+import { exportTemplateToPDF, exportTemplateToDOCX } from "@/utils/export";
 import { ResumeData } from "@/types/resume";
 import { ResumeTemplate } from "@/components/resume/ResumeTemplate";
+import { formatResumeToText } from "@/utils/resumeFormatters";
 
 interface ResumeOptimizerViewProps {
     jobId: string;
@@ -27,7 +28,9 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText, initialOrigin
                 const parsed = JSON.parse(initialOptimizedText);
                 setOptimizedContent(parsed);
             } catch (e) {
-                console.error("Failed to parse initial optimized resume JSON", e);
+                // If it isn't JSON, it might be legacy markdown, we'd handle it if we wanted back-compat,
+                // but since we strictly want the new format we ignore failures.
+                console.error("Failed to parse initial HTML/JSON string format", e);
             }
         }
     }, [initialOptimizedText]);
@@ -64,7 +67,10 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText, initialOrigin
             toast.success("Copied to clipboard!");
             setTimeout(() => setHasCopied(false), 2000);
         } else if (viewMode === "optimized" && optimizedContent) {
-            toast.info("Optimized Resume is a visual template. Please export as PDF!");
+            navigator.clipboard.writeText(formatResumeToText(optimizedContent));
+            setHasCopied(true);
+            toast.success("Optimized Text copied to clipboard!");
+            setTimeout(() => setHasCopied(false), 2000);
         }
     };
 
@@ -90,10 +96,18 @@ export function ResumeOptimizerView({ jobId, initialOptimizedText, initialOrigin
                         </button>
                         
                         <div className="ml-auto flex gap-2 pb-2">
-                            {viewMode === "optimized" && (
-                                <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8" onClick={() => exportTemplateToPDF("resume-template-root-auth", "Job_Application_Resume.pdf")}>
-                                    <Download className="w-3 h-3 mr-2" /> Download PDF
-                                </Button>
+                            {viewMode === "optimized" && optimizedContent && (
+                                <>
+                                    <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm h-8" onClick={() => exportTemplateToPDF("resume-template-root-auth", "Job_Application_Resume.pdf")}>
+                                        <Download className="w-3 h-3 mr-1.5" /> PDF
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="bg-white shadow-sm border-slate-200 h-8 text-slate-600" onClick={() => exportTemplateToDOCX(optimizedContent as ResumeData, "Job_Application_Resume.docx")}>
+                                        <Download className="w-3 h-3 mr-1.5" /> DOCX
+                                    </Button>
+                                    <Button size="sm" variant="outline" className="bg-white shadow-sm border-slate-200 h-8 text-slate-600" onClick={handleCopy}>
+                                        {hasCopied ? <><Check className="w-3 h-3 mr-1.5 text-emerald-600" /> Copied</> : <><Copy className="w-3 h-3 mr-1.5" /> Copy Text</>}
+                                    </Button>
+                                </>
                             )}
                             {viewMode === "original" && (
                                 <Button size="sm" variant="outline" className="bg-white shadow-sm border-slate-200 h-8 text-slate-600" onClick={handleCopy}>
