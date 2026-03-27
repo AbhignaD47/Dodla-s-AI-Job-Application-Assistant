@@ -15,6 +15,8 @@ interface ScoreResult {
     missing_skills: string[];
     keyword_match_percentage: number;
     improvements: string[];
+    resume_id?: string | null;
+    jd_id?: string | null;
 }
 
 export function JobScoringDashboard({ initialResumeText }: { initialResumeText?: string | null }) {
@@ -347,7 +349,7 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
                             <div className="h-px bg-slate-200 flex-1"></div>
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Link href="/dashboard/resume-optimizer">
+                            <Link href={(result.resume_id && result.jd_id) ? `/dashboard/resume-optimizer?resume_id=${result.resume_id}&jd_id=${result.jd_id}` : "/dashboard/resume-optimizer"}>
                                 <Button className="w-full h-16 bg-blue-50/50 hover:bg-blue-50 text-blue-700 border border-blue-200 shadow-sm transition-all hover:shadow-md flex justify-between items-center px-6 rounded-2xl group">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><FileText size={18} /></div>

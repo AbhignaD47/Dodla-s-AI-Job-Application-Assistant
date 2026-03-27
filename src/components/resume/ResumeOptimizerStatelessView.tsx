@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,12 +9,17 @@ import { FileText, Loader2, Sparkles, Check, Copy, Target } from "lucide-react";
 import { toast } from "sonner";
 
 export function ResumeOptimizerStatelessView() {
+    const searchParams = useSearchParams();
+    const urlResumeId = searchParams.get("resume_id");
+    const urlJdId = searchParams.get("jd_id");
+
     const [resumeText, setResumeText] = useState("");
     const [jdText, setJdText] = useState("");
     const [optimizedContent, setOptimizedContent] = useState<string | null>(null);
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [viewMode, setViewMode] = useState<"optimized" | "original">("optimized");
     const [hasCopied, setHasCopied] = useState(false);
+    const [hasAutoFetched, setHasAutoFetched] = useState(false);
 
     // Sync context from App Pipeline
     useEffect(() => {
@@ -30,31 +36,63 @@ export function ResumeOptimizerStatelessView() {
         if (jdText) sessionStorage.setItem("dodla_jd", jdText);
     }, [resumeText, jdText]);
 
-    const handleOptimize = async () => {
-        if (resumeText.length < 50) {
-            toast.error("Please provide your original resume text.");
-            return;
+    useEffect(() => {
+        if (urlResumeId && urlJdId && !hasAutoFetched) {
+            setHasAutoFetched(true);
+            handleOptimize(urlResumeId, urlJdId);
         }
-        if (jdText.length < 50) {
-            toast.error("Please provide the target job description text.");
-            return;
-        }
+    }, [urlResumeId, urlJdId, hasAutoFetched]);
 
+    const handleOptimize = async (resumeIdToUse?: string, jdIdToUse?: string) => {
+        const finalResumeId = resumeIdToUse || urlResumeId;
+        const finalJdId = jdIdToUse || urlJdId;
+
+        setIsOptimizing(true);
         try {
-            setIsOptimizing(true);
-            const response = await fetch("/api/resume/optimize-stateless", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resume_text: resumeText, jd_text: jdText }),
-            });
+            let optimizedContentRes;
 
-            const data = await response.json();
+            if (finalResumeId && finalJdId) {
+                optimizedContentRes = await fetch("/api/resume/optimize-stateless", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ resume_id: finalResumeId, jd_id: finalJdId }),
+                });
+            } else {
+                if (resumeText.length < 50) {
+                    toast.error("Please provide your original resume text.");
+                    setIsOptimizing(false);
+                    return;
+                }
+                if (jdText.length < 50) {
+                    toast.error("Please provide the target job description text.");
+                    setIsOptimizing(false);
+                    return;
+                }
 
-            if (!response.ok) {
+                const storeRes = await fetch("/api/resume/store", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ resume_text: resumeText, jd_text: jdText }),
+                });
+                const storeData = await storeRes.json();
+                
+                if (!storeRes.ok) throw new Error(storeData.error || "Failed to store resume securely");
+
+                optimizedContentRes = await fetch("/api/resume/optimize-stateless", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ resume_id: storeData.resume_id, jd_id: storeData.jd_id }),
+                });
+            }
+
+            const data = await optimizedContentRes.json();
+
+            if (!optimizedContentRes.ok) {
                 throw new Error(data.error || "Failed to optimize resume.");
             }
 
             setOptimizedContent(data.optimized_resume_text);
+            if (data.original_resume_text) setResumeText(data.original_resume_text);
             setViewMode("optimized");
             toast.success("Resume optimized instantly!");
         } catch (error: any) {
@@ -74,67 +112,73 @@ export function ResumeOptimizerStatelessView() {
         }
     };
 
+    const hasIds = Boolean(urlResumeId && urlJdId);
+
     return (
         <div className="space-y-10 pb-16 relative">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-                <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-500/20 to-cyan-500/0 rounded-[2rem] blur-xl opacity-50 transition duration-500"></div>
-                    <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
-                        <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
-                            <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
-                                <div className="p-2 bg-blue-100/80 rounded-xl text-blue-600"><FileText className="w-5 h-5" /></div>
-                                Original Resume
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            <Textarea 
-                                placeholder="Paste or verify your resume..."
-                                className="min-h-[220px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all shadow-inner"
-                                value={resumeText}
-                                onChange={(e) => setResumeText(e.target.value)}
-                            />
-                        </CardContent>
-                    </Card>
-                </div>
+            {!hasIds && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10 w-full animate-in fade-in duration-500">
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-500/20 to-cyan-500/0 rounded-[2rem] blur-xl opacity-50 transition duration-500"></div>
+                        <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
+                            <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
+                                <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
+                                    <div className="p-2 bg-blue-100/80 rounded-xl text-blue-600"><FileText className="w-5 h-5" /></div>
+                                    Original Resume
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <Textarea 
+                                    placeholder="Paste or verify your resume..."
+                                    className="min-h-[220px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all shadow-inner"
+                                    value={resumeText}
+                                    onChange={(e) => setResumeText(e.target.value)}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                <div className="relative group">
-                    <div className="absolute -inset-0.5 bg-gradient-to-bl from-emerald-500/20 to-teal-500/0 rounded-[2rem] blur-xl opacity-50 transition duration-500"></div>
-                    <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
-                        <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
-                            <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
-                                <div className="p-2 bg-emerald-100/80 rounded-xl text-emerald-600"><Target className="w-5 h-5" /></div>
-                                Target JD
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            <Textarea 
-                                placeholder="Paste or verify the target job description..."
-                                className="min-h-[220px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all shadow-inner"
-                                value={jdText}
-                                onChange={(e) => setJdText(e.target.value)}
-                            />
-                        </CardContent>
-                    </Card>
+                    <div className="relative group">
+                        <div className="absolute -inset-0.5 bg-gradient-to-bl from-emerald-500/20 to-teal-500/0 rounded-[2rem] blur-xl opacity-50 transition duration-500"></div>
+                        <Card className="relative h-full bg-white/80 backdrop-blur-xl border-slate-200/50 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden">
+                            <CardHeader className="bg-gradient-to-b from-slate-50/80 to-transparent border-b border-slate-100/50 pb-5 pt-6 px-6">
+                                <CardTitle className="flex items-center gap-3 text-xl font-bold text-slate-800">
+                                    <div className="p-2 bg-emerald-100/80 rounded-xl text-emerald-600"><Target className="w-5 h-5" /></div>
+                                    Target JD
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                <Textarea 
+                                    placeholder="Paste or verify the target job description..."
+                                    className="min-h-[220px] resize-y font-mono text-[13px] leading-relaxed bg-slate-50/50 border-slate-200/60 rounded-2xl p-4 focus-visible:ring-2 focus-visible:ring-emerald-500/50 transition-all shadow-inner"
+                                    value={jdText}
+                                    onChange={(e) => setJdText(e.target.value)}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
-            </div>
+            )}
 
-            <div className="flex justify-center pt-2 relative z-20">
-                <div className="relative group inline-block">
-                    <div className="absolute -inset-1 pointer-events-none bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500" />
-                    <Button 
-                        size="lg" 
-                        onClick={handleOptimize} 
-                        disabled={isOptimizing}
-                        className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full shadow-2xl disabled:opacity-75 disabled:cursor-wait"
-                    >
-                        {isOptimizing ? (
-                            <><Loader2 className="w-6 h-6 mr-3 animate-spin text-cyan-400" /> Rewriting strict alignments...</>
-                        ) : (
-                            <><Sparkles className="w-6 h-6 mr-3 text-blue-400" /> Auto-Optimize Resume</>
-                        )}
-                    </Button>
+            {(!hasIds || (!optimizedContent && isOptimizing)) && (
+                <div className="flex justify-center pt-2 relative z-20">
+                    <div className="relative group inline-block">
+                        <div className="absolute -inset-1 pointer-events-none bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-500 rounded-full blur opacity-40 group-hover:opacity-75 transition duration-500" />
+                        <Button 
+                            size="lg" 
+                            onClick={() => handleOptimize()} 
+                            disabled={isOptimizing}
+                            className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full shadow-2xl disabled:opacity-75 disabled:cursor-wait"
+                        >
+                            {isOptimizing ? (
+                                <><Loader2 className="w-6 h-6 mr-3 animate-spin text-cyan-400" /> Rewriting strict alignments...</>
+                            ) : (
+                                <><Sparkles className="w-6 h-6 mr-3 text-blue-400" /> Auto-Optimize Resume</>
+                            )}
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {optimizedContent && (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 mt-10">

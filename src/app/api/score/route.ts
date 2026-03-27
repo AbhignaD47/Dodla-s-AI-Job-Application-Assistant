@@ -160,13 +160,48 @@ ${resume_text}
             else improvements.push("Review formatting and ensure bullet points use strong action verbs focusing on specific metrics.");
         }
 
+        // 6. Automatically store the JD and Resume in DB to link to the Optimizer feature
+        let resume_id = null;
+        let jd_id = null;
+
+        if (user) {
+            // Insert Job securely
+            const remotiveId = `custom-sc-${crypto.randomUUID()}`;
+            const { data: jobRes } = await supabase
+                .from("jobs")
+                .insert({
+                    remotive_id: remotiveId,
+                    title: "AI Scored Job Application",
+                    company: "Target Company",
+                    description: jd_text,
+                })
+                .select("id")
+                .single();
+
+            if (jobRes?.id) jd_id = jobRes.id;
+
+            // Insert Resume securely
+            const { data: resumeRes } = await supabase
+                .from("resumes")
+                .insert({
+                    user_id: user.id,
+                    parsed_content: resume_text
+                })
+                .select("id")
+                .single();
+
+            if (resumeRes?.id) resume_id = resumeRes.id;
+        }
+
         // Return Exact Spec
         return NextResponse.json({
             score: finalScore,
             matched_skills: all_matched_skills,
             missing_skills: missing_skills,
             keyword_match_percentage: keywordMatchPercentage,
-            improvements: improvements
+            improvements: improvements,
+            resume_id: resume_id,
+            jd_id: jd_id
         });
 
     } catch (error: unknown) {
