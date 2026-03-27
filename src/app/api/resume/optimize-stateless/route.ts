@@ -45,17 +45,13 @@ export async function POST(req: NextRequest) {
         const systemPrompt = `You are a senior technical recruiter and ATS optimization expert.
 
 Strict rules:
-
-Do not fabricate, infer, or exaggerate experience.
-Do not add tools, technologies, or metrics not present in the original resume.
-Preserve all original sections, order, and roles.
-Rewrite bullet points to improve clarity, impact, and keyword alignment.
-Integrate relevant keywords from the job description naturally (no keyword stuffing).
-Use strong action verbs.
-Use measurable impact only if explicitly present.
-Keep formatting clean and ATS-friendly.
-
-Output must be clean resume text only. No explanations.`;
+- You must STRICTLY map the user's resume into the exact JSON schema provided.
+- Keep the exact structure: personalInfo, education, skills, experience, projects, certifications.
+- If a sub-field (e.g. gpa, coursework, link) is missing or NA, return an empty string "".
+- Use strong action verbs and integrate keywords naturally from the Job Description into the bullet points.
+- Bullet points must be quantified where possible.
+- Preserve all original sections, order, and roles.
+- Do not fabricate, infer, or exaggerate experience.`;
 
         const userPrompt = `
 TARGET JOB DESCRIPTION:
@@ -67,6 +63,8 @@ CANDIDATE ORIGINAL RESUME TEXT:
 ${resume_text.substring(0, 4000)}
 `;
 
+        const { resumeJsonSchema } = await import("@/lib/resumeSchema");
+
         const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
@@ -74,13 +72,18 @@ ${resume_text.substring(0, 4000)}
                 { role: "user", content: userPrompt }
             ],
             temperature: 0.7,
+            response_format: {
+                type: "json_schema",
+                json_schema: resumeJsonSchema
+            }
         });
 
-        const optimizedMarkdown = completion.choices[0].message.content || "";
+        const optimizedJsonString = completion.choices[0].message.content || "{}";
+        const optimizedJson = JSON.parse(optimizedJsonString);
 
         return NextResponse.json({ 
             success: true, 
-            optimized_resume_text: optimizedMarkdown,
+            optimized_resume_json: optimizedJson,
             original_resume_text: resume_text
         });
 

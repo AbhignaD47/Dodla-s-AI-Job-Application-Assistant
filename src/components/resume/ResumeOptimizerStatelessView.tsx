@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, Loader2, Sparkles, Check, Copy, Target, Download } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FileText, Loader2, Sparkles, Check, Target, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { exportToPDF, exportToDOCX } from "@/utils/export";
+import { exportTemplateToPDF } from "@/utils/export";
+import { ResumeData } from "@/types/resume";
+import { ResumeTemplate } from "@/components/resume/ResumeTemplate";
 
 export function ResumeOptimizerStatelessView() {
     const searchParams = useSearchParams();
@@ -16,13 +18,12 @@ export function ResumeOptimizerStatelessView() {
 
     const [resumeText, setResumeText] = useState("");
     const [jdText, setJdText] = useState("");
-    const [optimizedContent, setOptimizedContent] = useState<string | null>(null);
+    const [optimizedContent, setOptimizedContent] = useState<ResumeData | null>(null);
     const [isOptimizing, setIsOptimizing] = useState(false);
     const [viewMode, setViewMode] = useState<"optimized" | "original">("optimized");
     const [hasCopied, setHasCopied] = useState(false);
     const [hasAutoFetched, setHasAutoFetched] = useState(false);
 
-    // Sync context from App Pipeline
     useEffect(() => {
         if (typeof window !== "undefined") {
             const savedResume = sessionStorage.getItem("dodla_resume");
@@ -79,6 +80,7 @@ export function ResumeOptimizerStatelessView() {
                 let storeData;
                 try { storeData = await storeRes.json(); } catch(e) {}
                 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let optimizePayload: any = { resume_text: resumeText, jd_text: jdText };
 
                 if (storeRes.ok && storeData && storeData.resume_id && storeData.jd_id) {
@@ -98,10 +100,10 @@ export function ResumeOptimizerStatelessView() {
                 throw new Error(data.error || "Failed to optimize resume.");
             }
 
-            setOptimizedContent(data.optimized_resume_text);
+            setOptimizedContent(data.optimized_resume_json);
             if (data.original_resume_text) setResumeText(data.original_resume_text);
             setViewMode("optimized");
-            toast.success("Resume optimized instantly!");
+            toast.success("Resume accurately mapped to premium template!");
         } catch (error: any) {
             toast.error(error.message || "Optimization failed.");
         } finally {
@@ -110,12 +112,14 @@ export function ResumeOptimizerStatelessView() {
     };
 
     const handleCopy = () => {
-        const textToCopy = viewMode === "optimized" ? optimizedContent : resumeText;
-        if (textToCopy) {
-            navigator.clipboard.writeText(textToCopy);
+        if (viewMode === "original" && resumeText) {
+            navigator.clipboard.writeText(resumeText);
             setHasCopied(true);
-            toast.success("Copied to clipboard!");
+            toast.success("Original text copied to clipboard!");
             setTimeout(() => setHasCopied(false), 2000);
+        } else if (viewMode === "optimized" && optimizedContent) {
+            // Because it's an object, let's copy the raw stringified JSON for power users, or just alert
+            toast.info("Optimized Resume is a visual template. Please export as PDF!");
         }
     };
 
@@ -178,7 +182,7 @@ export function ResumeOptimizerStatelessView() {
                             className="relative bg-slate-900 hover:bg-slate-800 text-white min-w-[280px] h-16 text-xl font-bold rounded-full shadow-2xl disabled:opacity-75 disabled:cursor-wait"
                         >
                             {isOptimizing ? (
-                                <><Loader2 className="w-6 h-6 mr-3 animate-spin text-cyan-400" /> Rewriting strict alignments...</>
+                                <><Loader2 className="w-6 h-6 mr-3 animate-spin text-cyan-400" /> Mapping to Template...</>
                             ) : (
                                 <><Sparkles className="w-6 h-6 mr-3 text-blue-400" /> Auto-Optimize Resume</>
                             )}
@@ -196,7 +200,7 @@ export function ResumeOptimizerStatelessView() {
                                 className={`pb-3 text-sm font-bold transition-colors border-b-2 ${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700"}`}
                             >
                                 <Sparkles className="inline w-4 h-4 mr-2" />
-                                Optimized Resume
+                                Optimized Template
                             </button>
                             <button
                                 onClick={() => setViewMode("original")}
@@ -206,20 +210,30 @@ export function ResumeOptimizerStatelessView() {
                                 Original Version
                             </button>
                         </div>
-                        <div className="p-8 relative min-h-[400px]">
+                        <div className="p-8 relative min-h-[400px] bg-slate-100/50">
                             <div className="absolute top-6 right-8 z-10 flex gap-2">
-                                <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-indigo-600 rounded-xl" onClick={handleCopy}>
-                                    {hasCopied ? <><Check className="w-4 h-4 mr-2 text-emerald-600" /> Copied</> : <><Copy className="w-4 h-4 mr-2" /> Copy</>}
-                                </Button>
-                                <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-rose-600 rounded-xl" onClick={() => exportToPDF(viewMode === "optimized" ? (optimizedContent || "") : resumeText, "Optimized_Resume.pdf")}>
-                                    <Download className="w-4 h-4 mr-2" /> PDF
-                                </Button>
-                                <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-blue-600 rounded-xl" onClick={() => exportToDOCX(viewMode === "optimized" ? (optimizedContent || "") : resumeText, "Optimized_Resume.docx")}>
-                                    <Download className="w-4 h-4 mr-2" /> DOCX
-                                </Button>
+                                {viewMode === "optimized" && (
+                                    <Button size="sm" variant="default" className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md rounded-xl" onClick={() => exportTemplateToPDF("resume-template-root", "Dodla_Optimized_Resume.pdf")}>
+                                        <Download className="w-4 h-4 mr-2" /> Download PDF
+                                    </Button>
+                                )}
+                                {viewMode === "original" && (
+                                    <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-indigo-600 rounded-xl" onClick={handleCopy}>
+                                        {hasCopied ? <><Check className="w-4 h-4 mr-2 text-emerald-600" /> Copied</> : <><Copy className="w-4 h-4 mr-2" /> Copy Text</>}
+                                    </Button>
+                                )}
                             </div>
-                            <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-800 pt-10">
-                                {viewMode === "optimized" ? optimizedContent : resumeText}
+                            
+                            <div className="pt-10 custom-scrollbar overflow-x-auto pb-4">
+                                {viewMode === "optimized" ? (
+                                    <div className="min-w-[850px] mx-auto transform transition-transform origin-top flex justify-center">
+                                       <ResumeTemplate data={optimizedContent} />
+                                    </div>
+                                ) : (
+                                    <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-800 bg-white p-6 rounded-2xl shadow-inner border border-slate-200">
+                                        {resumeText}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </Card>

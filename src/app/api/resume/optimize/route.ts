@@ -61,12 +61,16 @@ export async function POST(req: NextRequest) {
 
         // 3. Prompt OpenAI to rewrite the resume
         // Instructions: rewrite bullet points to align with keywords, improve ATS compatibility.
-        const systemPrompt = `You are a senior technical recruiter and resume writer.
+        const systemPrompt = `You are a senior technical recruiter and ATS optimization expert.
 
 Rewrite resumes to maximize ATS performance and recruiter readability.
-
-Do not fabricate experience.
-Improve phrasing, impact, and keyword alignment.`;
+CRUCIAL CONDITIONS:
+- You must STRICTLY map the user's resume into the exact JSON schema provided.
+- Keep the exact structure: personalInfo, education, skills, experience, projects, certifications.
+- If a sub-field (e.g. gpa, coursework, link) is missing or NA, return an empty string "".
+- Use strong action verbs and integrate keywords naturally from the Job Description into the bullet points.
+- Bullet points must be quantified where possible.
+- Keep content truthful. Do not fabricate experience.`;
 
         const userPrompt = `Resume:
 ${resumeText.substring(0, 4000)}
@@ -74,31 +78,30 @@ ${resumeText.substring(0, 4000)}
 Job Description:
 ${jobDescription.substring(0, 4000)}
 
-Rewrite the resume with these constraints:
-- Keep bullet point format
-- Use strong action verbs
-- Add relevant keywords from JD naturally
-- Quantify impact where possible
-- Keep content truthful
+Rewrite the resume mapped exactly to the required JSON schema structure.`;
 
-Return ONLY the optimized resume in clean text format.
-No explanations.`;
+        const { resumeJsonSchema } = await import("@/lib/resumeSchema");
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o", // using the smarter model for highly creative text manipulation
+            model: "gpt-4o",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
             ],
             temperature: 0.7,
+            response_format: {
+                type: "json_schema",
+                json_schema: resumeJsonSchema
+            }
         });
 
-        const optimizedMarkdown = completion.choices[0].message.content || "";
+        const optimizedJsonString = completion.choices[0].message.content || "{}";
+        const optimizedJson = JSON.parse(optimizedJsonString);
 
         // 4. Save the optimized version to the applications table
         const { error: updateError } = await supabase
             .from("applications")
-            .update({ optimized_resume_url: optimizedMarkdown })
+            .update({ optimized_resume_url: optimizedJsonString })
             .eq("user_id", (user?.id || "demo-user-id"))
             .eq("job_id", job_id);
 
@@ -107,7 +110,7 @@ No explanations.`;
             throw updateError;
         }
 
-        return NextResponse.json({ success: true, optimized_resume_url: optimizedMarkdown });
+        return NextResponse.json({ success: true, optimized_resume_json: optimizedJson });
 
     } catch (error: unknown) {
         console.error("Resume optimization error:", error);
