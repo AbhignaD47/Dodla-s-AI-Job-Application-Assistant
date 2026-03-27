@@ -362,7 +362,7 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
                                 </Button>
                             </Link>
 
-                            <Link href="/dashboard/cover-letter">
+                            <Link href={(result.resume_id && result.jd_id) ? `/dashboard/cover-letter?resume_id=${result.resume_id}&jd_id=${result.jd_id}` : "/dashboard/cover-letter"}>
                                 <Button className="w-full h-16 bg-pink-50/50 hover:bg-pink-50 text-pink-700 border border-pink-200 shadow-sm transition-all hover:shadow-md flex justify-between items-center px-6 rounded-2xl group">
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 bg-pink-100 rounded-lg text-pink-600"><FileText size={18} /></div>
