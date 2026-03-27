@@ -5,8 +5,9 @@ import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileText, Loader2, Sparkles, Check, Copy, Target } from "lucide-react";
+import { FileText, Loader2, Sparkles, Check, Copy, Target, Download } from "lucide-react";
 import { toast } from "sonner";
+import { exportToPDF, exportToDOCX } from "@/utils/export";
 
 export function ResumeOptimizerStatelessView() {
     const searchParams = useSearchParams();
@@ -200,9 +201,15 @@ export function ResumeOptimizerStatelessView() {
                             </button>
                         </div>
                         <div className="p-8 relative min-h-[400px]">
-                            <div className="absolute top-6 right-8 z-10">
+                            <div className="absolute top-6 right-8 z-10 flex gap-2">
                                 <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-indigo-600 rounded-xl" onClick={handleCopy}>
-                                    {hasCopied ? <><Check className="w-4 h-4 mr-2 text-emerald-600" /> Copied</> : <><Copy className="w-4 h-4 mr-2" /> Copy Markdown</>}
+                                    {hasCopied ? <><Check className="w-4 h-4 mr-2 text-emerald-600" /> Copied</> : <><Copy className="w-4 h-4 mr-2" /> Copy</>}
+                                </Button>
+                                <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-rose-600 rounded-xl" onClick={() => exportToPDF(viewMode === "optimized" ? (optimizedContent || "") : resumeText, "Optimized_Resume.pdf")}>
+                                    <Download className="w-4 h-4 mr-2" /> PDF
+                                </Button>
+                                <Button size="sm" variant="outline" className="bg-white shadow-sm hover:text-blue-600 rounded-xl" onClick={() => exportToDOCX(viewMode === "optimized" ? (optimizedContent || "") : resumeText, "Optimized_Resume.docx")}>
+                                    <Download className="w-4 h-4 mr-2" /> DOCX
                                 </Button>
                             </div>
                             <div className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-slate-800 pt-10">
