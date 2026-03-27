@@ -8,34 +8,39 @@ const openai = new OpenAI({
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { resume_id, jd_id } = body;
+        const { resume_id, jd_id, resume_text: raw_resume, jd_text: raw_jd } = body;
 
-        if (!resume_id || !jd_id) {
-            return NextResponse.json({ error: "resume_id and jd_id are strictly required. Raw text input is not allowed." }, { status: 400 });
+        let jd_text = raw_jd;
+        let resume_text = raw_resume;
+
+        if (resume_id && jd_id) {
+            const supabase = await import("@/utils/supabase/server").then(m => m.createClient());
+            
+            // Fetch JD
+            const { data: jobData, error: jobErr } = await supabase
+                .from("jobs")
+                .select("description")
+                .eq("id", jd_id)
+                .single();
+
+            if (!jobData || jobErr) throw new Error("Job Description not found.");
+
+            // Fetch Resume
+            const { data: resumeData, error: resumeErr } = await supabase
+                .from("resumes")
+                .select("parsed_content")
+                .eq("id", resume_id)
+                .single();
+
+            if (!resumeData || resumeErr) throw new Error("Resume not found.");
+
+            jd_text = jobData.description;
+            resume_text = resumeData.parsed_content;
         }
 
-        const supabase = await import("@/utils/supabase/server").then(m => m.createClient());
-        
-        // Fetch JD
-        const { data: jobData, error: jobErr } = await supabase
-            .from("jobs")
-            .select("description")
-            .eq("id", jd_id)
-            .single();
-
-        if (!jobData || jobErr) throw new Error("Job Description not found.");
-
-        // Fetch Resume
-        const { data: resumeData, error: resumeErr } = await supabase
-            .from("resumes")
-            .select("parsed_content")
-            .eq("id", resume_id)
-            .single();
-
-        if (!resumeData || resumeErr) throw new Error("Resume not found.");
-
-        const jd_text = jobData.description;
-        const resume_text = resumeData.parsed_content;
+        if (!resume_text || !jd_text) {
+            return NextResponse.json({ error: "Valid text or valid IDs are required for optimization." }, { status: 400 });
+        }
 
         const systemPrompt = `You are a senior technical recruiter and ATS optimization expert.
 

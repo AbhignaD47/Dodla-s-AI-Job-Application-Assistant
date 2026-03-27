@@ -75,14 +75,20 @@ export function ResumeOptimizerStatelessView() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ resume_text: resumeText, jd_text: jdText }),
                 });
-                const storeData = await storeRes.json();
                 
-                if (!storeRes.ok) throw new Error(storeData.error || "Failed to store resume securely");
+                let storeData;
+                try { storeData = await storeRes.json(); } catch(e) {}
+                
+                let optimizePayload: any = { resume_text: resumeText, jd_text: jdText };
+
+                if (storeRes.ok && storeData && storeData.resume_id && storeData.jd_id) {
+                    optimizePayload = { resume_id: storeData.resume_id, jd_id: storeData.jd_id };
+                }
 
                 optimizedContentRes = await fetch("/api/resume/optimize-stateless", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ resume_id: storeData.resume_id, jd_id: storeData.jd_id }),
+                    body: JSON.stringify(optimizePayload),
                 });
             }
 
