@@ -142,14 +142,14 @@ export function ResumeOptimizerStatelessView() {
                         <div className="flex px-6 pt-4 gap-2 border-b border-slate-100 bg-slate-50/50">
                             <button
                                 onClick={() => setViewMode("optimized")}
-                                className={\`pb-3 text-sm font-bold transition-colors border-b-2 \${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700"}\`}
+                                className={`pb-3 text-sm font-bold transition-colors border-b-2 ${viewMode === "optimized" ? "border-indigo-600 text-indigo-700" : "border-transparent text-slate-500 hover:text-slate-700"}`}
                             >
                                 <Sparkles className="inline w-4 h-4 mr-2" />
                                 Optimized Resume
                             </button>
                             <button
                                 onClick={() => setViewMode("original")}
-                                className={\`pb-3 text-sm font-bold transition-colors border-b-2 \${viewMode === "original" ? "border-slate-400 text-slate-700" : "border-transparent text-slate-500 hover:text-slate-700"}\`}
+                                className={`pb-3 text-sm font-bold transition-colors border-b-2 ${viewMode === "original" ? "border-slate-400 text-slate-700" : "border-transparent text-slate-500 hover:text-slate-700"}`}
                             >
                                 <FileText className="inline w-4 h-4 mr-2" />
                                 Original Version
