@@ -61,34 +61,28 @@ export async function POST(req: NextRequest) {
 
         // 3. Prompt OpenAI to rewrite the resume
         // Instructions: rewrite bullet points to align with keywords, improve ATS compatibility.
-        const systemPrompt = `You are a senior technical recruiter and ATS optimization expert.
+        const systemPrompt = `You are a senior technical recruiter and resume writer.
 
-Strict rules:
+Rewrite resumes to maximize ATS performance and recruiter readability.
 
-Do not fabricate, infer, or exaggerate experience.
-Do not add tools, technologies, or metrics not present in the original resume.
-Preserve all original sections, order, and roles.
-Rewrite bullet points to improve clarity, impact, and keyword alignment.
-Integrate relevant keywords from the job description naturally (no keyword stuffing).
-Use strong action verbs.
-Use measurable impact only if explicitly present.
-Keep formatting clean and ATS-friendly.
+Do not fabricate experience.
+Improve phrasing, impact, and keyword alignment.`;
 
-Output must be clean resume text only. No explanations.`;
-
-        const userPrompt = `
-TARGET JOB DETAILS:
-Title: ${job.title}
-Company: ${job.company}
+        const userPrompt = `Resume:
+${resumeText.substring(0, 4000)}
 
 Job Description:
 ${jobDescription.substring(0, 4000)}
 
----
+Rewrite the resume with these constraints:
+- Keep bullet point format
+- Use strong action verbs
+- Add relevant keywords from JD naturally
+- Quantify impact where possible
+- Keep content truthful
 
-CANDIDATE ORIGINAL RESUME TEXT:
-${resumeText.substring(0, 4000)}
-`;
+Return ONLY the optimized resume in clean text format.
+No explanations.`;
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o", // using the smarter model for highly creative text manipulation

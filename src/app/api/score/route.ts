@@ -63,7 +63,8 @@ ${resume_text}
 
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-2024-08-06",
-            temperature: 0.1,
+            temperature: 0,
+            seed: 42,
             response_format: { type: "json_object" },
             messages: [
                 { role: "system", content: systemPrompt },

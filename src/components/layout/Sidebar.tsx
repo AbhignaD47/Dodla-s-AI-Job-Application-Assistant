@@ -14,10 +14,10 @@ const navItems = [
 
 const featureItems = [
     { name: "AI Job Scoring", href: "/dashboard/score", icon: Target, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { name: "Resume Optimizer per JD", href: "/dashboard", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { name: "JD-Specific Portfolio", href: "/dashboard", icon: Globe, color: "text-purple-500", bg: "bg-purple-500/10" },
-    { name: "Portfolio PDF Export", href: "/dashboard", icon: Download, color: "text-slate-500", bg: "bg-slate-500/10" },
-    { name: "Cover Letter Generator", href: "/dashboard", icon: FileSignature, color: "text-pink-500", bg: "bg-pink-500/10" },
+    { name: "Resume Optimizer per JD", href: "/dashboard/resume-optimizer", icon: FileText, color: "text-blue-500", bg: "bg-blue-500/10" },
+    { name: "JD-Specific Portfolio", href: "/dashboard/portfolio", icon: Globe, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { name: "Portfolio PDF Export", href: "/dashboard/portfolio", icon: Download, color: "text-slate-500", bg: "bg-slate-500/10" },
+    { name: "Cover Letter Generator", href: "/dashboard/cover-letter", icon: FileSignature, color: "text-pink-500", bg: "bg-pink-500/10" },
     { name: "Kanban Planner", href: "/dashboard/applications", icon: KanbanSquare, color: "text-orange-500", bg: "bg-orange-500/10" },
     { name: "Follow-Up Emails", href: "/dashboard", icon: Mail, color: "text-amber-500", bg: "bg-amber-500/10" },
 ];

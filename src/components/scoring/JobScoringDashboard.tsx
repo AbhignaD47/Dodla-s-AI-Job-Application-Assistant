@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -22,6 +23,22 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [result, setResult] = useState<ScoreResult | null>(null);
+
+    // Context Synchronizer: Interlink Features
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const savedResume = sessionStorage.getItem("dodla_resume");
+            const savedJd = sessionStorage.getItem("dodla_jd");
+            if (savedResume && !initialResumeText) setResumeText(savedResume);
+            if (savedJd) setJdText(savedJd);
+        }
+    }, [initialResumeText]);
+
+    useEffect(() => {
+        if (resumeText) sessionStorage.setItem("dodla_resume", resumeText);
+        if (jdText) sessionStorage.setItem("dodla_jd", jdText);
+    }, [resumeText, jdText]);
+
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -322,6 +339,41 @@ export function JobScoringDashboard({ initialResumeText }: { initialResumeText?:
                             </ul>
                         </CardContent>
                     </Card>
+
+                    {/* Next Steps: Interlinked Feature Pipeline */}
+                    <div className="md:col-span-3 mt-4">
+                        <h4 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            Pipeline Next Steps
+                            <div className="h-px bg-slate-200 flex-1"></div>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Link href="/dashboard/resume-optimizer">
+                                <Button className="w-full h-16 bg-blue-50/50 hover:bg-blue-50 text-blue-700 border border-blue-200 shadow-sm transition-all hover:shadow-md flex justify-between items-center px-6 rounded-2xl group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><FileText size={18} /></div>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className="font-bold text-base leading-none">Auto-Optimize Resume</span>
+                                            <span className="text-[11px] font-medium text-blue-400 leading-none">Use ATS context to strictly rewrite bullets</span>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+
+                            <Link href="/dashboard/cover-letter">
+                                <Button className="w-full h-16 bg-pink-50/50 hover:bg-pink-50 text-pink-700 border border-pink-200 shadow-sm transition-all hover:shadow-md flex justify-between items-center px-6 rounded-2xl group">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-pink-100 rounded-lg text-pink-600"><FileText size={18} /></div>
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className="font-bold text-base leading-none">Write Cover Letter</span>
+                                            <span className="text-[11px] font-medium text-pink-400 leading-none">Generate a JD-specific introduction</span>
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-5 h-5 text-pink-400 group-hover:translate-x-1 transition-transform" />
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
 
                 </div>
             )}
