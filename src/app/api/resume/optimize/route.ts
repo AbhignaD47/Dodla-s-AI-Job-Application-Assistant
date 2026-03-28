@@ -67,10 +67,14 @@ Rewrite resumes to maximize ATS performance and recruiter readability.
 CRUCIAL CONDITIONS:
 - You must STRICTLY map the user's resume into the exact JSON schema provided.
 - Keep the exact structure: personalInfo, education, skills, experience, projects, certifications.
-- If a sub-field (e.g. gpa, coursework, link) is missing or NA, return an empty string "".
+- If a sub-field (e.g. gpa, coursework, link) is missing or NA, return an empty string.
 - Use strong action verbs and integrate keywords naturally from the Job Description into the bullet points.
 - Bullet points must be quantified where possible.
-- CRITICAL: You MUST include ALL sections present in the original resume. Do NOT omit Professional Experience, Projects, or any other sections under any circumstances. Output the COMPLETE resume.
+- CRITICAL EXHAUSTIVE EXTRACTION: You MUST include ALL sections present in the original resume. 
+- You MUST extract EVERY SINGLE job and EVERY SINGLE project into the JSON arrays. 
+- NEVER return empty arrays for experience or projects if they exist in the source text.
+- Do NOT delete experience just because it doesn't match the Job Description perfectly. You must keep all experience, just optimize the phrasing.
+- Output the COMPLETE, full-length resume exactly matching the original chronological timeline.
 - Keep content truthful. Do not fabricate experience.`;
 
         const userPrompt = `Resume:
