@@ -51,16 +51,17 @@ Strict rules:
 - Use strong action verbs and integrate keywords naturally from the Job Description into the bullet points.
 - Bullet points must be quantified where possible.
 - Preserve all original sections, order, and roles.
+- CRITICAL: You MUST include ALL sections present in the original resume. Do NOT omit Professional Experience, Projects, or any other sections under any circumstances. Output the COMPLETE resume.
 - Do not fabricate, infer, or exaggerate experience.`;
 
         const userPrompt = `
 TARGET JOB DESCRIPTION:
-${jd_text.substring(0, 4000)}
+${jd_text.substring(0, 15000)}
 
 ---
 
 CANDIDATE ORIGINAL RESUME TEXT:
-${resume_text.substring(0, 4000)}
+${resume_text.substring(0, 15000)}
 `;
 
         const { resumeJsonSchema } = await import("@/lib/resumeSchema");
@@ -72,6 +73,7 @@ ${resume_text.substring(0, 4000)}
                 { role: "user", content: userPrompt }
             ],
             temperature: 0.7,
+            max_tokens: 8000,
             response_format: {
                 type: "json_schema",
                 json_schema: resumeJsonSchema

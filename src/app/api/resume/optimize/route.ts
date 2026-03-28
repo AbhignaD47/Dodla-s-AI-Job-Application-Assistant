@@ -70,13 +70,14 @@ CRUCIAL CONDITIONS:
 - If a sub-field (e.g. gpa, coursework, link) is missing or NA, return an empty string "".
 - Use strong action verbs and integrate keywords naturally from the Job Description into the bullet points.
 - Bullet points must be quantified where possible.
+- CRITICAL: You MUST include ALL sections present in the original resume. Do NOT omit Professional Experience, Projects, or any other sections under any circumstances. Output the COMPLETE resume.
 - Keep content truthful. Do not fabricate experience.`;
 
         const userPrompt = `Resume:
-${resumeText.substring(0, 4000)}
+${resumeText.substring(0, 15000)}
 
 Job Description:
-${jobDescription.substring(0, 4000)}
+${jobDescription.substring(0, 15000)}
 
 Rewrite the resume mapped exactly to the required JSON schema structure.`;
 
@@ -89,6 +90,7 @@ Rewrite the resume mapped exactly to the required JSON schema structure.`;
                 { role: "user", content: userPrompt }
             ],
             temperature: 0.7,
+            max_tokens: 8000,
             response_format: {
                 type: "json_schema",
                 json_schema: resumeJsonSchema
