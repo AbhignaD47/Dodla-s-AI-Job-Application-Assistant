@@ -10,47 +10,53 @@ interface ResumeTemplateProps {
 }
 
 export const ResumeTemplate: React.FC<ResumeTemplateProps> = ({ data, className = "", id = "resume-template-root" }) => {
-    // Blue color used in the template
-    const primaryColor = "#0047AB"; // A standard darker blue similar to the image
-
     return (
         <div 
-            className={`w-[816px] min-h-[1056px] bg-white text-black p-[0.75in] mx-auto shadow-2xl ${className}`}
-            style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "11pt", lineHeight: "1.15" }}
+            className={`w-[816px] min-h-[1056px] bg-white text-black p-[0.6in] mx-auto shadow-2xl ${className}`}
+            style={{ fontFamily: "'Calibri', 'Arial', 'Helvetica', sans-serif", fontSize: "10.5pt", lineHeight: "1.3" }}
             id={id}
         >
-            {/* AWS Badge placeholder. We'll skip the actual absolute logo if not provided, but here is where it would be */}
             {/* Header */}
-            <div className="text-center mb-2">
-                <h1 className="text-[20pt] font-bold" style={{ color: primaryColor }}>{data.personalInfo.name}</h1>
-                <div className="text-[10pt] mt-1 font-bold">
-                    [{data.personalInfo.location}] | [{data.personalInfo.phone}] | [{data.personalInfo.email}]{" "}
+            <div className="mb-[12px]">
+                <h1 className="text-[18pt] font-bold uppercase tracking-wide m-0 p-0 leading-tight">
+                    {data.personalInfo.name}
+                </h1>
+                <div className="text-[10pt] mt-[4px] leading-tight text-black">
+                    {[
+                        data.personalInfo.location,
+                        data.personalInfo.phone,
+                        data.personalInfo.email
+                    ].filter(Boolean).join(" | ")}
+                    {data.personalInfo.links.length > 0 && " | "}
                     {data.personalInfo.links.map((link, i) => (
-                        <span key={i}> | [<a href={link.url} className="underline text-black">{link.label}</a>]</span>
+                        <span key={i}>
+                            <a href={link.url} className="text-black no-underline hover:underline">
+                                {link.label || link.url.replace(/^https?:\/\/(www\.)?/, '')}
+                            </a>
+                            {i < data.personalInfo.links.length - 1 ? " | " : ""}
+                        </span>
                     ))}
                 </div>
             </div>
 
             {/* Education */}
             {data.education && data.education.length > 0 && (
-                <div className="mb-2">
-                    <h2 className="text-[12pt] font-bold text-center uppercase border-t border-b border-solid mb-1" style={{ color: primaryColor, borderColor: primaryColor }}>
+                <div className="mb-[12px]">
+                    <h2 className="text-[12pt] font-bold uppercase border-b-[1px] border-black pb-[4px] mt-[12px] mb-[6px] tracking-wide">
                         Education
                     </h2>
                     {data.education.map((edu, idx) => (
-                        <div key={idx} className="mb-1">
-                            <div className="flex justify-between font-bold">
-                                <span style={{ color: primaryColor }}>
-                                    {edu.institution}{edu.location ? `, ${edu.location}` : ""}
-                                </span>
-                                <span style={{ color: primaryColor }}>{edu.startDate} - {edu.endDate}</span>
-                            </div>
-                            <div className="flex justify-between">
+                        <div key={idx} className="mb-[8px]">
+                            <div className="flex justify-between font-bold text-[11pt] leading-tight mb-[2px]">
                                 <span>{edu.degree}</span>
-                                {edu.gpa && <span className="font-bold">GPA: {edu.gpa}</span>}
+                                <span>{edu.startDate} – {edu.endDate}</span>
+                            </div>
+                            <div className="flex justify-between text-[10.5pt] leading-tight">
+                                <span>{edu.institution}{edu.location ? `, ${edu.location}` : ""}</span>
+                                {edu.gpa && <span>GPA: {edu.gpa}</span>}
                             </div>
                             {edu.coursework && (
-                                <div className="italic text-[10pt]">
+                                <div className="text-[10pt] mt-[4px] leading-tight">
                                     Relevant Coursework: {edu.coursework}
                                 </div>
                             )}
@@ -61,45 +67,47 @@ export const ResumeTemplate: React.FC<ResumeTemplateProps> = ({ data, className 
 
             {/* Skills */}
             {data.skills && data.skills.length > 0 && (
-                <div className="mb-2">
-                    <h2 className="text-[12pt] font-bold text-center uppercase border-t border-b border-solid mb-1" style={{ color: primaryColor, borderColor: primaryColor }}>
+                <div className="mb-[12px]">
+                    <h2 className="text-[12pt] font-bold uppercase border-b-[1px] border-black pb-[4px] mt-[12px] mb-[6px] tracking-wide">
                         Skills
                     </h2>
-                    <ul className="list-none p-0 m-0">
+                    <div className="text-[10.5pt] leading-[1.4]">
                         {data.skills.map((skillGroup, idx) => (
-                            <li key={idx} className="mb-0.5">
-                                <span className="font-bold" style={{ color: primaryColor }}>{skillGroup.category}: </span>
+                            <div key={idx}>
+                                <span className="font-bold">{skillGroup.category}: </span>
                                 <span>{skillGroup.items.join(", ")}</span>
-                            </li>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             )}
 
             {/* Professional Experience */}
             {data.experience && data.experience.length > 0 && (
-                <div className="mb-2">
-                    <h2 className="text-[12pt] font-bold text-center uppercase border-t border-b border-solid mb-1" style={{ color: primaryColor, borderColor: primaryColor }}>
+                <div className="mb-[12px]">
+                    <h2 className="text-[12pt] font-bold uppercase border-b-[1px] border-black pb-[4px] mt-[12px] mb-[6px] tracking-wide">
                         Professional Experience
                     </h2>
                     {data.experience.map((exp, idx) => (
-                        <div key={idx} className="mb-2">
-                            <div className="flex justify-between font-bold">
+                        <div key={idx} className="mb-[10px]">
+                            <div className="flex justify-between font-bold text-[11pt] leading-tight mb-[2px]">
                                 <span>
-                                    <span style={{ color: primaryColor }}>{exp.role}</span>
+                                    {exp.role}
                                     {exp.technologies && exp.technologies.length > 0 && (
-                                        <span className="italic font-normal" style={{ color: primaryColor }}> | {exp.technologies.join(", ")}</span>
+                                        <span className="font-normal"> | {exp.technologies.join(", ")}</span>
                                     )}
                                 </span>
-                                <span style={{ color: primaryColor }}>{exp.startDate} - {exp.endDate}</span>
+                                <span>{exp.startDate} – {exp.endDate}</span>
                             </div>
-                            <div className="flex justify-between italic text-[10.5pt] mb-1">
-                                <span>{exp.company}</span>
-                                <span>{exp.location}</span>
+                            <div className="text-[10.5pt] leading-tight mb-[4px]">
+                                {exp.company}{exp.location ? `, ${exp.location}` : ""}
                             </div>
-                            <ul className="list-disc leading-snug ml-5 mt-0 mb-0">
+                            <ul className="list-none m-0 p-0 text-[10.5pt]">
                                 {exp.achievements.map((ach, i) => (
-                                    <li key={i} className="pl-1 mb-0.5 text-[10.5pt]">{ach}</li>
+                                    <li key={i} className="leading-[1.4] mb-[3px] pl-[14px] relative">
+                                        <span className="absolute left-[0px] top-[0px] font-bold">●</span>
+                                        {ach}
+                                    </li>
                                 ))}
                             </ul>
                         </div>
@@ -109,24 +117,27 @@ export const ResumeTemplate: React.FC<ResumeTemplateProps> = ({ data, className 
 
             {/* Projects */}
             {data.projects && data.projects.length > 0 && (
-                <div className="mb-2">
-                    <h2 className="text-[12pt] font-bold text-center uppercase border-t border-b border-solid mb-1" style={{ color: primaryColor, borderColor: primaryColor }}>
+                <div className="mb-[12px]">
+                    <h2 className="text-[12pt] font-bold uppercase border-b-[1px] border-black pb-[4px] mt-[12px] mb-[6px] tracking-wide">
                         Projects
                     </h2>
                     {data.projects.map((proj, idx) => (
-                        <div key={idx} className="mb-2">
-                            <div className="flex justify-between font-bold">
+                        <div key={idx} className="mb-[10px]">
+                            <div className="flex justify-between font-bold text-[11pt] leading-tight mb-[4px]">
                                 <span>
-                                    <span style={{ color: primaryColor }}>{proj.name}</span>
+                                    {proj.name}
                                     {proj.technologies && proj.technologies.length > 0 && (
-                                        <span className="italic font-normal" style={{ color: primaryColor }}> | {proj.technologies.join(", ")}</span>
+                                        <span className="font-normal"> | {proj.technologies.join(", ")}</span>
                                     )}
                                 </span>
-                                <span style={{ color: primaryColor }}>{proj.date}</span>
+                                <span>{proj.date}</span>
                             </div>
-                            <ul className="list-disc leading-snug ml-5 mt-0.5 mb-0">
+                            <ul className="list-none m-0 p-0 text-[10.5pt]">
                                 {proj.achievements.map((ach, i) => (
-                                    <li key={i} className="pl-1 mb-0.5 text-[10.5pt]">{ach}</li>
+                                    <li key={i} className="leading-[1.4] mb-[3px] pl-[14px] relative">
+                                        <span className="absolute left-[0px] top-[0px] font-bold">●</span>
+                                        {ach}
+                                    </li>
                                 ))}
                             </ul>
                         </div>
@@ -136,18 +147,24 @@ export const ResumeTemplate: React.FC<ResumeTemplateProps> = ({ data, className 
 
             {/* Certifications */}
             {data.certifications && data.certifications.length > 0 && (
-                <div className="mb-2">
-                    <h2 className="text-[12pt] font-bold text-center uppercase border-t border-b border-solid mb-1" style={{ color: primaryColor, borderColor: primaryColor }}>
+                <div className="mb-[12px]">
+                    <h2 className="text-[12pt] font-bold uppercase border-b-[1px] border-black pb-[4px] mt-[12px] mb-[6px] tracking-wide">
                         Certifications
                     </h2>
-                    <ul className="list-none p-0 m-0">
+                    <div className="text-[10.5pt] leading-[1.4]">
                         {data.certifications.map((cert, idx) => (
-                            <li key={idx} className="mb-0.5">
-                                <span className="font-bold" style={{ color: primaryColor }}>{cert.issuer}: </span>
-                                <span>{cert.name} {cert.link && <span className="text-blue-600 font-bold">[<a href={cert.link}>Link</a>]</span>}</span>
-                            </li>
+                            <div key={idx} className="mb-[2px]">
+                                {cert.name}
+                                {cert.issuer && ` - ${cert.issuer}`}
+                                {cert.link && (
+                                    <>
+                                        {" "}
+                                        [<a href={cert.link} className="text-black no-underline hover:underline">Link</a>]
+                                    </>
+                                )}
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             )}
         </div>

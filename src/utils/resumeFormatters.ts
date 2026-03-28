@@ -19,11 +19,11 @@ export function formatResumeToText(data: ResumeData): string {
     if (data.education && data.education.length > 0) {
         lines.push("EDUCATION");
         data.education.forEach(edu => {
-            const eduLine1 = `${edu.institution}${edu.location ? ", " + edu.location : ""}`;
+            const eduLine1 = `${edu.degree}`;
             const dates = `${edu.startDate} – ${edu.endDate}`;
             lines.push(`${eduLine1}    ${dates}`);
             
-            const eduLine2 = edu.degree;
+            const eduLine2 = `${edu.institution}${edu.location ? ", " + edu.location : ""}`;
             if (edu.gpa) {
                 lines.push(`${eduLine2}    GPA: ${edu.gpa}`);
             } else {

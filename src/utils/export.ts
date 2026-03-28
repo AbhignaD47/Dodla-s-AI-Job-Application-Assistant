@@ -53,12 +53,12 @@ export const exportToDOCX = async (markdownText: string, filename: string) => {
 export const exportTemplateToDOCX = async (data: ResumeData, filename: string) => {
     const children: Paragraph[] = [];
 
-    const createHeader = (text: string) => {
-        children.push(new Paragraph({ text: "", spacing: { before: 200 } }));
+    const createHeader = (title: string) => {
         children.push(new Paragraph({
-            children: [new TextRun({ text: text.toUpperCase(), bold: true, color: "0047AB" })],
+            children: [new TextRun({ text: title.toUpperCase(), bold: true, size: 24, font: "Calibri" })],
             heading: HeadingLevel.HEADING_2,
-            spacing: { after: 100 }
+            border: { bottom: { color: "auto", space: 1, style: "single", size: 6 } },
+            spacing: { before: 160, after: 80 }
         }));
     };
 
@@ -66,48 +66,55 @@ export const exportTemplateToDOCX = async (data: ResumeData, filename: string) =
         children.push(new Paragraph({
             tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
             children: [
-                new TextRun({ text: leftText, bold: boldLeft }),
-                new TextRun({ text: `\t${rightText}` }),
+                new TextRun({ text: leftText, bold: boldLeft, size: 22, font: "Calibri" }),
+                new TextRun({ text: `\t${rightText}`, size: 20, font: "Calibri" }),
             ],
-            spacing: { after: 40 }
+            spacing: { after: 30 }
         }));
     };
 
     // Personal Info
     children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: data.personalInfo.name.toUpperCase(), bold: true, size: 32 })],
-        spacing: { after: 100 }
+        alignment: AlignmentType.LEFT,
+        children: [new TextRun({ text: data.personalInfo.name.toUpperCase(), bold: true, size: 36, font: "Calibri" })],
+        spacing: { after: 60 }
     }));
 
     const contactParts = [
         data.personalInfo.location,
         data.personalInfo.phone,
         data.personalInfo.email,
-        ...data.personalInfo.links.map(l => l.url)
+        ...data.personalInfo.links.map(l => l.url.replace(/^https?:\/\/(www\.)?/, ''))
     ].filter(Boolean);
 
     children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: contactParts.join(" | ") })],
-        spacing: { after: 200 }
+        alignment: AlignmentType.LEFT,
+        children: [new TextRun({ text: contactParts.join(" | "), size: 20, font: "Calibri" })],
+        spacing: { after: 120 }
     }));
 
     // Education
     if (data.education && data.education.length > 0) {
         createHeader("EDUCATION");
         data.education.forEach(edu => {
-            const eduLine1 = `${edu.institution}${edu.location ? ", " + edu.location : ""}`;
+            const eduLine1 = `${edu.degree}`;
             const dates = `${edu.startDate} – ${edu.endDate}`;
             createSplitLine(eduLine1, dates, true);
             
-            const eduLine2 = edu.degree;
-            createSplitLine(eduLine2, edu.gpa ? `GPA: ${edu.gpa}` : "", false);
+            const eduLine2 = `${edu.institution}${edu.location ? ", " + edu.location : ""}`;
+            children.push(new Paragraph({
+                tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+                children: [
+                    new TextRun({ text: eduLine2, size: 21, font: "Calibri" }),
+                    new TextRun({ text: edu.gpa ? `\tGPA: ${edu.gpa}` : "", size: 21, font: "Calibri" }),
+                ],
+                spacing: { after: 30 }
+            }));
 
             if (edu.coursework) {
                 children.push(new Paragraph({
-                    children: [new TextRun({ text: `Relevant Coursework: ${edu.coursework}` })],
-                    spacing: { after: 80 }
+                    children: [new TextRun({ text: `Relevant Coursework: ${edu.coursework}`, size: 20, font: "Calibri" })],
+                    spacing: { after: 60 }
                 }));
             }
         });
@@ -119,10 +126,10 @@ export const exportTemplateToDOCX = async (data: ResumeData, filename: string) =
         data.skills.forEach(skill => {
             children.push(new Paragraph({
                 children: [
-                    new TextRun({ text: `${skill.category}: `, bold: true }),
-                    new TextRun({ text: skill.items.join(", ") })
+                    new TextRun({ text: `${skill.category}: `, bold: true, size: 21, font: "Calibri" }),
+                    new TextRun({ text: skill.items.join(", "), size: 21, font: "Calibri" })
                 ],
-                spacing: { after: 40 }
+                spacing: { after: 30 }
             }));
         });
     }
@@ -133,19 +140,31 @@ export const exportTemplateToDOCX = async (data: ResumeData, filename: string) =
         data.experience.forEach(exp => {
             let roleLine = exp.role;
             if (exp.technologies && exp.technologies.length > 0) {
-                roleLine += ` | ${exp.technologies.join(", ")}`;
+                roleLine += ` | `;
             }
-            const dates = `${exp.startDate} – ${exp.endDate}`;
-            createSplitLine(roleLine, dates, true);
+            
+            // Build the left side of the split line manually to set normal font for technologies
+            children.push(new Paragraph({
+                tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+                children: [
+                    new TextRun({ text: exp.role, bold: true, size: 22, font: "Calibri" }),
+                    ...(exp.technologies && exp.technologies.length > 0 ? [new TextRun({ text: ` | ${exp.technologies.join(", ")}`, size: 22, font: "Calibri" })] : []),
+                    new TextRun({ text: `\t${exp.startDate} – ${exp.endDate}`, size: 20, font: "Calibri" }),
+                ],
+                spacing: { after: 30 }
+            }));
             
             const companyLine = `${exp.company}${exp.location ? ", " + exp.location : ""}`;
-            children.push(new Paragraph({ children: [new TextRun({ text: companyLine, italics: true })], spacing: { after: 60 } }));
+            children.push(new Paragraph({ 
+                children: [new TextRun({ text: companyLine, size: 21, font: "Calibri" })], 
+                spacing: { after: 40 } 
+            }));
             
             exp.achievements.forEach(ach => {
                 children.push(new Paragraph({
-                    text: ach,
+                    children: [new TextRun({ text: ach, size: 21, font: "Calibri" })],
                     bullet: { level: 0 },
-                    spacing: { after: 40 }
+                    spacing: { after: 30 }
                 }));
             });
         });
@@ -155,18 +174,21 @@ export const exportTemplateToDOCX = async (data: ResumeData, filename: string) =
     if (data.projects && data.projects.length > 0) {
         createHeader("PROJECTS");
         data.projects.forEach(proj => {
-            let projLine = proj.name;
-            if (proj.technologies && proj.technologies.length > 0) {
-                projLine += ` | ${proj.technologies.join(", ")}`;
-            }
-            const date = proj.date;
-            createSplitLine(projLine, date, true);
+            children.push(new Paragraph({
+                tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }],
+                children: [
+                    new TextRun({ text: proj.name, bold: true, size: 22, font: "Calibri" }),
+                    ...(proj.technologies && proj.technologies.length > 0 ? [new TextRun({ text: ` | ${proj.technologies.join(", ")}`, size: 22, font: "Calibri" })] : []),
+                    new TextRun({ text: `\t${proj.date}`, size: 20, font: "Calibri" }),
+                ],
+                spacing: { after: 40 }
+            }));
             
             proj.achievements.forEach(ach => {
                 children.push(new Paragraph({
-                    text: ach,
+                    children: [new TextRun({ text: ach, size: 21, font: "Calibri" })],
                     bullet: { level: 0 },
-                    spacing: { after: 40 }
+                    spacing: { after: 30 }
                 }));
             });
         });
@@ -177,18 +199,28 @@ export const exportTemplateToDOCX = async (data: ResumeData, filename: string) =
         createHeader("CERTIFICATIONS");
         data.certifications.forEach(cert => {
             let certLine = cert.name;
-            if (cert.issuer) certLine = `${cert.issuer}: ${certLine}`;
-            if (cert.link) certLine += ` [${cert.link}]`;
+            if (cert.issuer) certLine = `${cert.issuer} - ${certLine}`;
+            if (cert.link) certLine += ` [Link: ${cert.link}]`;
             children.push(new Paragraph({
-                children: [new TextRun({ text: certLine })],
-                spacing: { after: 40 }
+                children: [new TextRun({ text: certLine, size: 21, font: "Calibri" })],
+                spacing: { after: 30 }
             }));
         });
     }
 
     const doc = new Document({
+        styles: {
+            default: {
+                document: {
+                    run: { font: "Calibri", size: 21 },
+                    paragraph: { spacing: { line: 276 } } // ~1.15 line spacing (240 is single)
+                }
+            }
+        },
         sections: [{
-            properties: {},
+            properties: {
+                page: { margin: { top: 720, right: 720, bottom: 720, left: 720 } } // 0.5 inch margins (1440 twips = 1 inch)
+            },
             children: children,
         }]
     });
