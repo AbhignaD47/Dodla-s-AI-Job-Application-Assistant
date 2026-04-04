@@ -60,40 +60,39 @@ export async function POST(req: NextRequest) {
         const resumeText = resume.parsed_content;
 
         // 3. Prompt OpenAI to extract and align projects into JSON
-        const systemPrompt = `You are an expert Technical Recruiter and Portfolio Designer.
-You will be provided with a candidate's existing resume text and a specific target job description.
-Your task is to extract the candidate's most relevant projects, experiences, and technical skills that align perfectly with the target job description.
+        const systemPrompt = `You are a portfolio generator for job candidates.
+Generate structured, job-specific portfolio content.
+Do not include fluff.
+Make content concise and relevant to the job description.
+Return JSON only.
 
-You MUST completely adhere to the following strict JSON schema in your response:
+OUTPUT FORMAT (JSON):
 {
-  "summary": "A 1-2 sentence compelling summary of the candidate specifically tailored to why they are a great fit for this role.",
-  "skills": ["Skill 1", "Skill 2", "Skill 3"], // Minimum 5, maximum 15 key technical skills relevant to the job.
+  "about": "",
+  "skills": [],
   "projects": [
     {
-      "name": "Project Name or Role",
-      "description": "A 2-3 sentence impactful description focusing on achievements and technologies used.",
-      "technologies": ["React", "Node", "PostgreSQL"] // Array of strings used in this specific project
+      "title": "",
+      "description": "",
+      "impact": ""
     }
-  ]
-}
-
-Rules:
-1. Extract a maximum of 3 highly relevant projects or major career experiences from the resume. Do NOT invent new projects.
-2. Only include skills the candidate actually possesses according to their resume, but prioritize those mentioned in the job description.
-3. Return ONLY valid JSON block. No markdown wrappers, no introductory text, no conversational responses. Just the raw JSON object.`;
+  ],
+  "experience_summary": ""
+}`;
 
         const userPrompt = `
-TARGET JOB DETAILS:
-Title: ${job.title}
-Company: ${job.company}
+RESUME:
+${resumeText.substring(0, 10000)}
 
-Job Description:
-${jobDescription.substring(0, 4000)}
+JOB DESCRIPTION:
+${jobDescription.substring(0, 10000)}
 
----
-
-CANDIDATE ORIGINAL RESUME TEXT:
-${resumeText.substring(0, 4000)}
+TASK:
+Generate a portfolio with:
+- About section
+- Skills (prioritized for JD)
+- Projects (tailored descriptions)
+- Experience summary
 `;
 
         const completion = await openai.chat.completions.create({

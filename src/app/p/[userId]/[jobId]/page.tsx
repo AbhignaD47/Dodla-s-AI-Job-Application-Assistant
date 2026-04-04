@@ -92,9 +92,19 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                     </div>
 
                     <p className="text-lg md:text-xl text-slate-700 leading-relaxed max-w-3xl">
-                        {portfolioData.summary}
+                        {portfolioData.about}
                     </p>
                 </header>
+
+                {/* Experience Summary Section */}
+                <section className="mb-14 print:mb-8">
+                    <div className="p-6 bg-slate-100 rounded-2xl border border-slate-200">
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3">Experience Summary</h3>
+                        <p className="text-slate-800 leading-relaxed font-medium">
+                            {portfolioData.experience_summary}
+                        </p>
+                    </div>
+                </section>
 
                 {/* Technical Skills Section */}
                 <section className="mb-16 print:mb-10 page-break-inside-avoid">
@@ -128,22 +138,18 @@ export default async function PortfolioPage({ params }: PortfolioPageProps) {
                                 <div key={idx} className="group page-break-inside-avoid">
                                     <div className="flex flex-col md:flex-row md:items-baseline justify-between mb-3 gap-2">
                                         <h3 className="text-xl font-bold text-slate-800 group-hover:text-emerald-700 transition-colors">
-                                            {project.name}
+                                            {project.title}
                                         </h3>
                                     </div>
                                     <p className="text-slate-600 leading-relaxed mb-4 print:text-sm">
                                         {project.description}
                                     </p>
-                                    <div className="flex flex-wrap gap-1.5 mt-2">
-                                        {project.technologies?.map((tech: string, i: number) => (
-                                            <span
-                                                key={i}
-                                                className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 print:border-slate-300 print:text-slate-700 print:bg-transparent"
-                                            >
-                                                {tech}
-                                            </span>
-                                        ))}
-                                    </div>
+                                    {project.impact && (
+                                        <div className="mt-3 p-4 bg-emerald-50/50 rounded-lg border border-emerald-100 print:bg-transparent print:border-slate-300">
+                                            <strong className="text-emerald-700 text-sm font-semibold uppercase tracking-wide block mb-1">Impact</strong>
+                                            <p className="text-slate-700 italic text-sm">{project.impact}</p>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}
